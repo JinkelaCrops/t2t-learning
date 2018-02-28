@@ -4,19 +4,20 @@ source activate py36
 
 HOMEPATH=../t2t_med
 TMP_DIR=$HOMEPATH/t2t_datagen/medicine
+FILE_NAME=medicine.sample.big.txt
 
 # filter
-python filter.py -f $TMP_DIR/medicine.sample.txt -s " ||| "
+python filter.py -f $TMP_DIR/$FILE_NAME -s " ||| "
 
 # unpack
-python unpack.py -f $TMP_DIR/filter.medicine.sample.txt -s " ||| "
+python unpack.py -f $TMP_DIR/filter.$FILE_NAME -s " ||| "
 
 # segment
-python segment.py -f $TMP_DIR/filter.medicine.sample.txt.zh -l zh
-python segment.py -f $TMP_DIR/filter.medicine.sample.txt.en -l en
+python segment.py -f $TMP_DIR/filter.$FILE_NAME.zh -l zh -p 10000
+python segment.py -f $TMP_DIR/filter.$FILE_NAME.en -l en -p 10000
 
 # trainvalidsplit
-python trainvalidsplit.py -f $TMP_DIR/seg.filter.medicine.sample.txt -z 1000
+python trainvalidsplit.py -f $TMP_DIR/seg.filter.$FILE_NAME -z 1000
 
 cd $TMP_DIR
 cd ..

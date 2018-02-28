@@ -28,7 +28,8 @@ python tensor2tensor/bin/t2t_trainer.py \
     --problems=$PROBLEM \
     --model=$MODEL \
     --hparams_set=$HPARAMS \
-    --output_dir=$TRAIN_DIR
+    --output_dir=$TRAIN_DIR \
+    --gpuid=0
 
 # Decode
 DECODE_FILE=$TMP_DIR/med_enzh_50000k_tok_dev.lang1

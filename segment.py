@@ -13,7 +13,7 @@ hanlp_class_path_sep = ":"
 parser = argparse.ArgumentParser(description="segment.py")
 parser.add_argument('-f', "--file_path")
 parser.add_argument('-l', "--language")
-parser.add_argument('-p', "--report", default=1000)
+parser.add_argument('-p', "--report", default=10000)
 
 args = parser.parse_args()
 
@@ -93,6 +93,7 @@ if __name__ == '__main__':
     file_path = args.file_path
     file_name = file_path.replace("\\", "/").split("/")[-1]
     file_father_dir = "/".join(file_path.replace("\\", "/").split("/")[:-1])
+    report_every = int(args.report)
     seg_lines = []
 
     if lan == "zh":
@@ -104,7 +105,7 @@ if __name__ == '__main__':
             for k, line in enumerate(f):
                 seg_line = SegmentHanLP.process(line.strip())
                 seg_lines.append(" ".join(seg_line))
-                if k % args.report == args.report - 1:
+                if k % report_every == report_every - 1:
                     print(f"segment info: {lan} segment step {k+1}")
         shutdownJVM()
 
@@ -113,7 +114,7 @@ if __name__ == '__main__':
             for k, line in enumerate(f):
                 seg_line = SegmentNLTK.process(line.strip())
                 seg_lines.append(" ".join(seg_line))
-                if k % args.report == args.report - 1:
+                if k % report_every == report_every - 1:
                     print(f"segment info: {lan} segment step {k+1}")
 
     with open(f"{file_father_dir}/seg.{file_name}", "w", encoding="utf8") as f:
