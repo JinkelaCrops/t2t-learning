@@ -1,56 +1,54 @@
 from nltk.translate.bleu_score import corpus_bleu
 import re
+import argparse
 
-path = "/media/yanpan/7D4CF1590195F939/Projects/tensor2tensor-1.4.2/tensor2tensor"
+parser = argparse.ArgumentParser(description="mybleu.py")
+parser.add_argument('-rf', "--ref_file_path")
+parser.add_argument('-tf', "--tgt_file_path")
+parser.add_argument('-l', "--language")
 
-problems = "translate_enzh_med"
-model = "transformer"
-hparams_set = "transformer_base_single_gpu"
-# model = "lstm_seq2seq_attention"
-# hparams_set = "lstm_luong_attention_multi"
-output_dir = f"{path}/train/{problems}/{model}-{hparams_set}"
-ref_path = f"{path}/tmp/t2t_datagen/med_enzh_50000k_tok_dev.lang2"
-tgt_path = f"{output_dir}/translation.zh"
+args = parser.parse_args()
 
 
-def decode(line):
-    return re.sub(" +", " ", re.sub("", " ", line)).strip()
+class Decode(object):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def zh_separator(zh):
+        return re.sub(" +", " ", re.sub("", " ", zh)).strip()
+
+    @staticmethod
+    def zh_separator(en):
+        return re.sub(" +", " ", en).strip()
+
+    def zh_decode(self, path):
+        with open(path, "r", encoding="utf8") as f:
+            for line in f:
+                yield self.zh_separator(line[:-1])
+
+    def en_decode(self, path):
+        with open(path, "r", encoding="utf8") as f:
+            for line in f:
+                yield self.en_separator(line[:-1])
 
 
-def split_every(path):
-    with open(path, "r", encoding="utf8") as f:
-        for line in f:
-            yield decode(line[:-1])
+if __name__ == '__main__':
+    ref_path = args.ref_file_path
+    tgt_path = args.tgt_file_path
+    language = args.language
+
+    decode = Decode()
+    if language == "zh":
+        ref = [line.split() for line in decode.zh_decode(ref_path)]
+        tgt = [line.split() for line in decode.zh_decode(tgt_path)]
+    else:
+        ref = [line.split() for line in decode.en_decode(ref_path)]
+        tgt = [line.split() for line in decode.en_decode(tgt_path)]
+
+    print("my bleu: bleu4 is %s" % corpus_bleu([[r] for r in ref], tgt))
 
 
-def split_space(path):
-    with open(path, "r", encoding="utf8") as f:
-        for line in f:
-            yield line[:-1]
-
-
-ref = [line.split() for line in split_every(ref_path)]
-tgt = [line.split() for line in split_every(tgt_path)]
-
-corpus_bleu([[r] for r in ref], tgt)
 # 0.17842, translate_enzh_wmt8k, transformer, transformer_base_single_gpu
 # 0.09039, translate_enzh_wmt8k, lstm_seq2seq_attention, lstm_luong_attention_multi
 # 0.40956, translate_enzh_med, transformer, transformer_base_single_gpu
-
-ref = [line.split() for line in split_space(ref_path)]
-tgt = [line.split() for line in split_space(tgt_path)]
-
-corpus_bleu([[r] for r in ref], tgt)
-
-"""
-from tensor2tensor.utils import bleu_hook
-import tensorflow as tf
-flags = tf.flags
-FLAGS = flags.FLAGS
-path = "/media/yanpan/7D4CF1590195F939/Projects/tensor2tensor-1.4.2/tensor2tensor"
-FLAGS.reference = f"{path}/tmp/t2t_datagen/wmt_enzh_8192k_tok_dev.lang2"
-FLAGS.translation = f"{path}/tmp/t2t_datagen/translation.zh"
-
-bleu_hook.bleu_wrapper(FLAGS.reference, FLAGS.translation, case_sensitive=True)
-"""
-

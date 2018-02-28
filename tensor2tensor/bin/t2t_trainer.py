@@ -34,6 +34,9 @@ from tensor2tensor.utils import usr_dir
 
 import tensorflow as tf
 
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 flags = tf.flags
 FLAGS = flags.FLAGS
 
@@ -218,18 +221,6 @@ def execute_schedule(exp):
 
 
 def main(_):
-
-    path = "/media/yanpan/7D4CF1590195F939/Projects/tensor2tensor-1.4.2/tensor2tensor"
-
-    FLAGS.data_dir = f"{path}/data"
-    FLAGS.problems = "translate_enzh_med"
-    FLAGS.model = "transformer"
-    FLAGS.hparams_set = "transformer_base_single_gpu"
-    # FLAGS.model = "lstm_seq2seq_attention"
-    # FLAGS.hparams_set = "lstm_luong_attention_multi"
-    FLAGS.output_dir = f"{path}/train/{FLAGS.problems}/{FLAGS.model}-{FLAGS.hparams_set}-maxvocab"
-
-
     tf.logging.set_verbosity(tf.logging.INFO)
     trainer_lib.set_random_seed(FLAGS.random_seed)
     usr_dir.import_usr_dir(FLAGS.t2t_usr_dir)

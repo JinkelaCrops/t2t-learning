@@ -132,12 +132,6 @@ def set_random_seed():
 
 
 def main(_):
-    path = "/media/yanpan/7D4CF1590195F939/Projects/tensor2tensor-1.4.2/tensor2tensor"
-
-    FLAGS.problem = "translate_enzh_med"
-    FLAGS.data_dir = f"{path}/data"
-    FLAGS.tmp_dir = f"{path}/tmp/t2t_datagen"
-
     tf.logging.set_verbosity(tf.logging.INFO)
     usr_dir.import_usr_dir(FLAGS.t2t_usr_dir)
 

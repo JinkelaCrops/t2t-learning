@@ -88,21 +88,6 @@ def decode(estimator, hparams, decode_hp):
 
 
 def main(_):
-    path = "/media/yanpan/7D4CF1590195F939/Projects/tensor2tensor-1.4.2/tensor2tensor"
-
-    FLAGS.data_dir = f"{path}/data"
-    FLAGS.problems = "translate_enzh_med"
-    FLAGS.model = "transformer"
-    FLAGS.hparams_set = "transformer_base_single_gpu"
-    # FLAGS.model = "lstm_seq2seq_attention"
-    # FLAGS.hparams_set = "lstm_luong_attention_multi"
-    FLAGS.output_dir = f"{path}/train/{FLAGS.problems}/{FLAGS.model}-{FLAGS.hparams_set}"
-    FLAGS.decode_hparams = "beam_size=4,alpha=0.6"
-    FLAGS.decode_from_file = f"{path}/tmp/t2t_datagen/med_enzh_50000k_tok_dev.lang1"
-    FLAGS.decode_to_file = f"{FLAGS.output_dir}/translation.zh"
-    FLAGS.decode_shards = 1
-    FLAGS.decode_interactive = False
-
     tf.logging.set_verbosity(tf.logging.INFO)
     usr_dir.import_usr_dir(FLAGS.t2t_usr_dir)
     FLAGS.use_tpu = False  # decoding not supported on TPU
