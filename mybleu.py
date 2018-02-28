@@ -13,25 +13,34 @@ ref_path = f"{path}/tmp/t2t_datagen/med_enzh_50000k_tok_dev.lang2"
 tgt_path = f"{output_dir}/translation.zh"
 
 
+def decode(line):
+    return re.sub(" +", " ", re.sub("", " ", line)).strip()
+
+
 def split_every(path):
     with open(path, "r", encoding="utf8") as f:
-        data = f.readlines()
+        for line in f:
+            yield decode(line[:-1])
 
-    def decode(line):
-        return re.sub(" +", " ", re.sub("", " ", line)).strip()
 
-    data = [decode(x[:-1]) for x in data]
-    return data
+def split_space(path):
+    with open(path, "r", encoding="utf8") as f:
+        for line in f:
+            yield line[:-1]
 
 
 ref = [line.split() for line in split_every(ref_path)]
 tgt = [line.split() for line in split_every(tgt_path)]
 
-
-
 corpus_bleu([[r] for r in ref], tgt)
 # 0.17842, translate_enzh_wmt8k, transformer, transformer_base_single_gpu
 # 0.09039, translate_enzh_wmt8k, lstm_seq2seq_attention, lstm_luong_attention_multi
+# 0.40956, translate_enzh_med, transformer, transformer_base_single_gpu
+
+ref = [line.split() for line in split_space(ref_path)]
+tgt = [line.split() for line in split_space(tgt_path)]
+
+corpus_bleu([[r] for r in ref], tgt)
 
 """
 from tensor2tensor.utils import bleu_hook
@@ -44,3 +53,4 @@ FLAGS.translation = f"{path}/tmp/t2t_datagen/translation.zh"
 
 bleu_hook.bleu_wrapper(FLAGS.reference, FLAGS.translation, case_sensitive=True)
 """
+

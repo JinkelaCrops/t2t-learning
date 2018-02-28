@@ -227,7 +227,7 @@ def main(_):
     FLAGS.hparams_set = "transformer_base_single_gpu"
     # FLAGS.model = "lstm_seq2seq_attention"
     # FLAGS.hparams_set = "lstm_luong_attention_multi"
-    FLAGS.output_dir = f"{path}/train/{FLAGS.problems}/{FLAGS.model}-{FLAGS.hparams_set}"
+    FLAGS.output_dir = f"{path}/train/{FLAGS.problems}/{FLAGS.model}-{FLAGS.hparams_set}-maxvocab"
 
 
     tf.logging.set_verbosity(tf.logging.INFO)
