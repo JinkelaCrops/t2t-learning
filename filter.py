@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 import argparse
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     sep = args.separator
     file_path = args.file_path
     file_name = file_path.replace("\\", "/").split("/")[-1]
-    file_father_dir = "/".join(file_path_prefix.replace("\\", "/").split("/")[:-1])
+    file_father_dir = "/".join(file_path.replace("\\", "/").split("/")[:-1])
 
     with open(file_path, "r", encoding="utf8") as f:
         data = f.readlines()
@@ -69,6 +70,7 @@ if __name__ == '__main__':
     data = line_filter.replace_bad_sep(data, "\u0000")
     data = line_filter.tridots_filter(data)
     data = line_filter.clear_filter(data)
+    data = line_filter.replace_bad_sep(data, sep)
     print(f"filter info: num of filter lines: {len(data)}")
 
     with open(f"{file_father_dir}/filter.{file_name}", "w", encoding="utf8") as f:
