@@ -34,9 +34,6 @@ from tensor2tensor.utils import usr_dir
 
 import tensorflow as tf
 
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 flags = tf.flags
 FLAGS = flags.FLAGS
 
@@ -58,6 +55,12 @@ flags.DEFINE_bool("generate_data", False, "Generate data before training?")
 flags.DEFINE_string("tmp_dir", "/tmp/t2t_datagen",
                     "Temporary storage directory, used if --generate_data.")
 flags.DEFINE_bool("profile", False, "Profile performance?")
+
+# ---------------------------------------------------------------
+flags.DEFINE_list("gpuid", ["0"], "limit used gpu")
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = " ".join(FLAGS.gpuid)
+# ---------------------------------------------------------------
 
 # To maintain compatibility with some internal libs, we guard against these flag
 # definitions possibly erroring. Apologies for the ugliness.
