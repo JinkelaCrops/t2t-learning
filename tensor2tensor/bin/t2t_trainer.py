@@ -57,9 +57,9 @@ flags.DEFINE_string("tmp_dir", "/tmp/t2t_datagen",
 flags.DEFINE_bool("profile", False, "Profile performance?")
 
 # ---------------------------------------------------------------
-flags.DEFINE_list("gpuid", ["0"], "limit used gpu")
+flags.DEFINE_string("gpuid", "0", "limit used gpu")
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-os.environ["CUDA_VISIBLE_DEVICES"] = " ".join(FLAGS.gpuid)
+os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpuid
 # ---------------------------------------------------------------
 
 # To maintain compatibility with some internal libs, we guard against these flag
