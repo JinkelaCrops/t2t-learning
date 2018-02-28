@@ -1,10 +1,8 @@
 import random
 import argparse
-import os
 
 parser = argparse.ArgumentParser(description="trainvalidsplit.py")
 parser.add_argument('-f', "--file_path_prefix")
-parser.add_argument('-t', "--tar_file_name", default="")
 parser.add_argument('-z', "--valid_size", default=10000)
 parser.add_argument('-s', "--shuffle", default=True)
 
@@ -19,10 +17,6 @@ if __name__ == '__main__':
     en_file_path = file_path_prefix + ".en"
 
     valid_size = int(args.valid_size)
-    tar_file_name = args.tar_file_name
-    if tar_file_name == "":
-        tar_file_name = file_father_dir.split("/")[-1] + ".tar.gz"
-
     # input zh
     with open(zh_file_path, "r", encoding="utf8") as f:
         zh_data = f.readlines()
@@ -54,9 +48,3 @@ if __name__ == '__main__':
     with open(f"{file_father_dir}/valid.en", "w", encoding="utf8") as f:
         f.writelines(en_data[-valid_size:])
     del en_data
-
-    os.popen(f"tar -cvPf {file_father_dir}/{tar_file_name} "
-             f"{file_father_dir}/train.zh "
-             f"{file_father_dir}/train.en "
-             f"{file_father_dir}/valid.zh "
-             f"{file_father_dir}/valid.en")
