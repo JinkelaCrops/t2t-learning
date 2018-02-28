@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source activate py36
+
 HOMEPATH=../t2t_med
 TMP_DIR=$HOMEPATH/t2t_datagen/medicine
 
@@ -17,7 +19,8 @@ python segment.py -f $TMP_DIR/filter.medicine.sample.txt.en -l en
 python trainvalidsplit.py -f $TMP_DIR/seg.filter.medicine.sample.txt -z 1000
 
 cd $TMP_DIR
-tar -cvf medicine.tar.gz train.en train.zh valid.en valid.zh
+cd ..
+tar -cvf medicine/medicine.tar.gz medicine/train.en medicine/train.zh medicine/valid.en medicine/valid.zh
 
 
 

@@ -81,7 +81,7 @@ class TranslateEnzhMed(translate.TranslateProblem):
 
     @property
     def targeted_vocab_size(self):
-        return 100000
+        return 50000
 
     @property
     def source_vocab_name(self):

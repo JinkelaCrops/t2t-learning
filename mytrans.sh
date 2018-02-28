@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-python tensor2tensor/bin/t2t_trainer.py --registry_help
+# python tensor2tensor/bin/t2t_trainer.py --registry_help
 
 HOMEPATH=../t2t_med
 
@@ -50,10 +50,10 @@ python tensor2tensor/bin/t2t_decoder.py \
 #    FLAGS.decode_interactive = False
 
 # See the translations
-haed -10 $OUTPUT_FILE
+head -10 $OUTPUT_FILE
 
 # Evaluate the BLEU score
 # Note: Report this BLEU score in papers, not the internal approx_bleu metric.
 REF_FILE=$TMP_DIR/med_enzh_50000k_tok_dev.lang2
-TGT_FILE=OUTPUT_FILE
-python mybleu.py -rf REF_FILE -tf TGT_FILE -l zh
+TGT_FILE=$OUTPUT_FILE
+python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l zh
