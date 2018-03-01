@@ -8,7 +8,7 @@ PROBLEM=translate_enzh_med
 MODEL=transformer
 HPARAMS=transformer_base_single_gpu
 # MODEL=lstm_seq2seq_attention
-# HPARAMS=lstm_luong_attention_multi
+# HPARAMS=lstm_luong_attention_larger_batch_size_2048
 
 TMP_DIR=$HOMEPATH/t2t_datagen/medicine
 DATA_DIR=$HOMEPATH/t2t_data/medicine
@@ -23,5 +23,7 @@ python tensor2tensor/bin/t2t_trainer.py \
     --model=$MODEL \
     --hparams_set=$HPARAMS \
     --output_dir=$TRAIN_DIR \
-    --gpuid=0
+    --gpuid=0,1 \
+    --worker_gpu=2 \
+    --train_steps=40000
 
