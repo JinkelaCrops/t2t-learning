@@ -138,4 +138,8 @@ class TranslateEnzhMed(translate.TranslateProblem):
             "targets": target_token,
         }
 
-
+@registry.register_problem
+class TranslateEnzhMedSimple(TranslateEnzhMed):
+    @property
+    def targeted_vocab_size(self):
+        return 8000

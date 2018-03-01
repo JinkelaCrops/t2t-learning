@@ -2,7 +2,7 @@
 
 HOMEPATH=../t2t_med
 
-PROBLEM=translate_enzh_med
+PROBLEM=translate_zhen_med_simple
 MODEL=transformer
 HPARAMS=transformer_base_single_gpu
 
@@ -11,8 +11,8 @@ DATA_DIR=$HOMEPATH/t2t_data/medicine
 TRAIN_DIR=$HOMEPATH/t2t_train/medicine/$PROBLEM/$MODEL-$HPARAMS
 
 # Decode
-DECODE_FILE=$TMP_DIR/med_enzh_50000k_tok_dev.lang1
-OUTPUT_FILE=$TRAIN_DIR/translation.zh
+DECODE_FILE=$TMP_DIR/med_zhen_50000k_tok_dev.lang1
+OUTPUT_FILE=$TRAIN_DIR/translation.en
 
 BEAM_SIZE=4
 ALPHA=0.6
@@ -36,4 +36,4 @@ head -10 $OUTPUT_FILE
 # Note: Report this BLEU score in papers, not the internal approx_bleu metric.
 REF_FILE=$TMP_DIR/med_enzh_50000k_tok_dev.lang2
 TGT_FILE=$OUTPUT_FILE
-python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l zh
+python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l en

@@ -4,8 +4,7 @@
 
 HOMEPATH=../t2t_med
 
-PROBLEM=translate_enzh_med
-
+PROBLEM=translate_zhen_med_simple
 TMP_DIR=$HOMEPATH/t2t_datagen/medicine
 DATA_DIR=$HOMEPATH/t2t_data/medicine
 

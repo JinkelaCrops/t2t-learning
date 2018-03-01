@@ -140,3 +140,8 @@ class TranslateZhenMed(translate.TranslateProblem):
         }
 
 
+@registry.register_problem
+class TranslateZhenMedSimple(TranslateZhenMed):
+    @property
+    def targeted_vocab_size(self):
+        return 8000

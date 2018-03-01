@@ -17,7 +17,7 @@ python segment.py -f $TMP_DIR/filter.$FILE_NAME.zh -l zh -p 10000
 python segment.py -f $TMP_DIR/filter.$FILE_NAME.en -l en -p 10000
 
 # trainvalidsplit
-python trainvalidsplit.py -f $TMP_DIR/seg.filter.$FILE_NAME -z 1000
+python trainvalidsplit.py -f $TMP_DIR/seg.filter.$FILE_NAME -z 200
 
 cd $TMP_DIR
 cd ..

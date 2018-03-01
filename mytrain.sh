@@ -4,9 +4,9 @@
 
 HOMEPATH=../t2t_med
 
-PROBLEM=translate_enzh_med
+PROBLEM=translate_zhen_med_simple
 MODEL=transformer
-HPARAMS=transformer_base_single_gpu
+HPARAMS=transformer_base_single_gpu_batch_size_4096_lr_005
 # MODEL=lstm_seq2seq_attention
 # HPARAMS=lstm_luong_attention_larger_batch_size_2048
 
@@ -23,7 +23,7 @@ python tensor2tensor/bin/t2t_trainer.py \
     --model=$MODEL \
     --hparams_set=$HPARAMS \
     --output_dir=$TRAIN_DIR \
-    --gpuid=0,1 \
-    --worker_gpu=2 \
-    --train_steps=40000
+    --train_steps=10000 \
+    --gpuid=0 \
+    --worker_gpu=1
 
