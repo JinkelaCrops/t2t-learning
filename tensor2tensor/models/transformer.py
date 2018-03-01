@@ -1337,3 +1337,10 @@ def transformer_tpu_base_language_model():
   hparams.learning_rate_warmup_steps = 1000
   hparams.shared_embedding_and_softmax_weights = False
   return hparams
+
+@registry.register_hparams
+def transformer_big_batch_size_2048():
+  """HParams for transfomer big model on WMT."""
+  hparams = transformer_big()
+  hparams.batch_size = 2048
+  return hparams

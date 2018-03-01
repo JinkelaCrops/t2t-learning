@@ -233,7 +233,7 @@ def lstm_luong_attention_multi_larger():
   return hparams
 
 @registry.register_hparams
-def lstm_luong_attention_multi_larger_userdef():
+def lstm_luong_attention_multi_larger_batch_size_2048():
   """Multi-head Luong attention."""
   hparams = lstm_luong_attention_multi_larger()
   hparams.batch_size = 2048
