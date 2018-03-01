@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-HOMEPATH=../t2t_med
+HOMEPATH=/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449/t2t_med
 
-PROBLEM=translate_zhen_med_simple
+PROBLEM=translate_zhen_med
 MODEL=transformer
-HPARAMS=transformer_base_single_gpu
+HPARAMS=transformer_base_single_gpu_batch_size_2048
 
 TMP_DIR=$HOMEPATH/t2t_datagen/medicine
 DATA_DIR=$HOMEPATH/t2t_data/medicine
@@ -34,6 +34,6 @@ head -10 $OUTPUT_FILE
 
 # Evaluate the BLEU score
 # Note: Report this BLEU score in papers, not the internal approx_bleu metric.
-REF_FILE=$TMP_DIR/med_enzh_50000k_tok_dev.lang2
+REF_FILE=$TMP_DIR/med_zhen_50000k_tok_dev.lang2
 TGT_FILE=$OUTPUT_FILE
 python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l en

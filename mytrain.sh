@@ -2,11 +2,11 @@
 
 # python tensor2tensor/bin/t2t_trainer.py --registry_help
 
-HOMEPATH=../t2t_med
+HOMEPATH=/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449/t2t_med
 
-PROBLEM=translate_zhen_med_simple
+PROBLEM=translate_zhen_med
 MODEL=transformer
-HPARAMS=transformer_base_single_gpu_batch_size_4096_lr_005
+HPARAMS=transformer_base_single_gpu_batch_size_2048
 # MODEL=lstm_seq2seq_attention
 # HPARAMS=lstm_luong_attention_larger_batch_size_2048
 
@@ -23,7 +23,8 @@ python tensor2tensor/bin/t2t_trainer.py \
     --model=$MODEL \
     --hparams_set=$HPARAMS \
     --output_dir=$TRAIN_DIR \
-    --train_steps=10000 \
-    --gpuid=0 \
-    --worker_gpu=1
+    --gpuid=0,1 \
+    --worker_gpu=2 \
+    --train_steps=40000
+
 
