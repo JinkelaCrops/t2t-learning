@@ -1355,10 +1355,17 @@ def transformer_base_single_gpu_batch_size_4096():
   return hparams
 
 @registry.register_hparams
-def transformer_base_single_gpu_batch_size_4096_lr_005():
+def transformer_base_single_gpu_batch_size_2048():
   """HParams for transfomer big model on WMT."""
   hparams = transformer_base_single_gpu()
-  hparams.batch_size = 4096
+  hparams.batch_size = 2048
   hparams.symbol_modality_num_shards = 1
-  hparams.learning_rate = 0.05
+  return hparams
+
+@registry.register_hparams
+def transformer_base_single_gpu_batch_size_1024():
+  """HParams for transfomer big model on WMT."""
+  hparams = transformer_base_single_gpu()
+  hparams.batch_size = 1024
+  hparams.symbol_modality_num_shards = 1
   return hparams
