@@ -18,7 +18,4 @@ dist/
 *.sublime-workspace
 
 # .sh
-mywork.sh
-mydatagen.sh
-mytrain.sh
-mydecoder.sh
+*.sh
