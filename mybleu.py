@@ -55,5 +55,7 @@ if __name__ == '__main__':
 # 0.28273, translate_zhen_med, transformer, transformer_base_single_gpu
 # 0.32275, translate_zhen_med, opennmt baseline
 
-# , translate_zhen_med, lstm_seq2seq_attention, lstm_luong_attention_larger_batch_size_2048
+# 0.31475, translate_zhen_med, transformer, transformer_base_single_gpu_batch_size_4096, 2 gpus
+# 0.27262, translate_zhen_med, transformer, transformer_base_single_gpu_batch_size_2048, 2 gpus
+# 0., translate_zhen_med, transformer, transformer_base_single_gpu_batch_size_1024, 2 gpus
 
