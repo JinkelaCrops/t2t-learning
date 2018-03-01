@@ -16,3 +16,9 @@ dist/
 # Sublime project files
 *.sublime-project
 *.sublime-workspace
+
+# .sh
+mywork.sh
+mydatagen.sh
+mytrain.sh
+mydecoder.sh
