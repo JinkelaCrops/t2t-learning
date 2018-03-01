@@ -55,6 +55,12 @@ flags.DEFINE_bool("decode_interactive", False,
                   "Interactive local inference mode.")
 flags.DEFINE_integer("decode_shards", 1, "Number of decoding replicas.")
 
+# ---------------------------------------------------------------
+flags.DEFINE_string("gpuid", "0", "limit used gpu")
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpuid
+# ---------------------------------------------------------------
+
 
 def create_hparams():
     return trainer_lib.create_hparams(

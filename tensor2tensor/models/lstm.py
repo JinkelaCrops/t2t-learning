@@ -231,3 +231,10 @@ def lstm_luong_attention_multi_larger():
   hparams.add_hparam("num_heads", 4)
   hparams.add_hparam("attention_mechanism", "luong")
   return hparams
+
+@registry.register_hparams
+def lstm_luong_attention_multi_larger_userdef():
+  """Multi-head Luong attention."""
+  hparams = lstm_luong_attention_multi_larger()
+  hparams.batch_size = 2048
+  return hparams

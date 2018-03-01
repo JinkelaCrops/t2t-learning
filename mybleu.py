@@ -19,7 +19,7 @@ class Decode(object):
         return re.sub(" +", " ", re.sub("", " ", zh)).strip()
 
     @staticmethod
-    def zh_separator(en):
+    def en_separator(en):
         return re.sub(" +", " ", en).strip()
 
     def zh_decode(self, path):
@@ -52,3 +52,8 @@ if __name__ == '__main__':
 # 0.17842, translate_enzh_wmt8k, transformer, transformer_base_single_gpu
 # 0.09039, translate_enzh_wmt8k, lstm_seq2seq_attention, lstm_luong_attention_multi
 # 0.40956, translate_enzh_med, transformer, transformer_base_single_gpu
+# 0.28273, translate_zhen_med, transformer, transformer_base_single_gpu
+# 0.32275, translate_zhen_med, opennmt baseline
+
+
+
