@@ -1345,6 +1345,28 @@ def transformer_big_batch_size_2048():
   hparams.batch_size = 2048
   hparams.symbol_modality_num_shards = 1
   return hparams
+@registry.register_hparams
+def transformer_big_batch_size_1024():
+  """HParams for transfomer big model on WMT."""
+  hparams = transformer_big()
+  hparams.batch_size = 1024
+  hparams.symbol_modality_num_shards = 1
+  return hparams
+@registry.register_hparams
+def transformer_big_single_gpu_batch_size_2048():
+  """HParams for transfomer big model on WMT."""
+  hparams = transformer_big_single_gpu()
+  hparams.batch_size = 2048
+  hparams.symbol_modality_num_shards = 1
+  return hparams
+@registry.register_hparams
+def transformer_big_single_gpu_batch_size_1024():
+  """HParams for transfomer big model on WMT."""
+  hparams = transformer_big_single_gpu()
+  hparams.batch_size = 1024
+  hparams.symbol_modality_num_shards = 1
+  return hparams
+
 
 @registry.register_hparams
 def transformer_base_single_gpu_batch_size_4096():
@@ -1368,4 +1390,14 @@ def transformer_base_single_gpu_batch_size_1024():
   hparams = transformer_base_single_gpu()
   hparams.batch_size = 1024
   hparams.symbol_modality_num_shards = 1
+  return hparams
+
+
+@registry.register_hparams
+def transformer_base_single_gpu_batch_size_2048_warmup_24000():
+  """HParams for transfomer big model on WMT."""
+  hparams = transformer_base_single_gpu()
+  hparams.batch_size = 2048
+  hparams.symbol_modality_num_shards = 1
+  hparams.learning_rate_warmup_steps = 24000
   return hparams
