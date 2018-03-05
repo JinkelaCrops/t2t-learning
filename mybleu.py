@@ -6,12 +6,14 @@ parser = argparse.ArgumentParser(description="mybleu.py")
 parser.add_argument('-rf', "--ref_file_path")
 parser.add_argument('-tf', "--tgt_file_path")
 parser.add_argument('-l', "--language")
+parser.add_argument("--lower", default=False, type=bool)
 
 args = parser.parse_args()
 
 
 class Decode(object):
-    def __init__(self):
+    def __init__(self, lower=False):
+        self.lower = lower
         pass
 
     @staticmethod
@@ -23,14 +25,24 @@ class Decode(object):
         return re.sub(" +", " ", en).strip()
 
     def zh_decode(self, path):
-        with open(path, "r", encoding="utf8") as f:
-            for line in f:
-                yield self.zh_separator(line[:-1])
+        if self.lower:
+            with open(path, "r", encoding="utf8") as f:
+                for line in f:
+                    yield self.zh_separator(line[:-1].lower())
+        else:
+            with open(path, "r", encoding="utf8") as f:
+                for line in f:
+                    yield self.zh_separator(line[:-1])
 
     def en_decode(self, path):
-        with open(path, "r", encoding="utf8") as f:
-            for line in f:
-                yield self.en_separator(line[:-1])
+        if self.lower:
+            with open(path, "r", encoding="utf8") as f:
+                for line in f:
+                    yield self.en_separator(line[:-1].lower())
+        else:
+            with open(path, "r", encoding="utf8") as f:
+                for line in f:
+                    yield self.en_separator(line[:-1])
 
 
 if __name__ == '__main__':
@@ -38,7 +50,7 @@ if __name__ == '__main__':
     tgt_path = args.tgt_file_path
     language = args.language
 
-    decode = Decode()
+    decode = Decode(args.lower)
     if language == "zh":
         ref = [line.split() for line in decode.zh_decode(ref_path)]
         tgt = [line.split() for line in decode.zh_decode(tgt_path)]
@@ -59,6 +71,7 @@ if __name__ == '__main__':
 # 0.27262, translate_zhen_med, transformer, transformer_base_single_gpu_batch_size_2048, 2 gpus
 # 0.25179, translate_zhen_med, transformer, transformer_base_single_gpu_batch_size_1024, 2 gpus
 
-# 0.26694, translate_zhen_med_small_vocab, transformer, transformer_big_batch_size-2048, 2 gpus
-# 0., translate_zhen_med_small_vocab, transformer, transformer_big_single_gpu_batch_size-2048, 2 gpus
+# 0.26694, translate_zhen_med_small_vocab, transformer, transformer_big_batch_size_2048, 2 gpus
+# 0.40032, translate_zhen_med_small_vocab, transformer, transformer_big_single_gpu_batch_size_2048, 2 gpus
+# 0., translate_zhen_med_small_vocab, transformer, transformer_big_single_gpu_batch_size_2048_warmup_24000, 2 gpus
 

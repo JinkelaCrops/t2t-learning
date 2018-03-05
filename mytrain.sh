@@ -6,7 +6,7 @@ HOMEPATH=/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449/t2t_med
 
 PROBLEM=translate_zhen_med_small_vocab
 MODEL=transformer
-HPARAMS=transformer_big_single_gpu_batch_size_2048
+HPARAMS=transformer_big_single_gpu_batch_size_2048_warmup_24000
 # MODEL=lstm_seq2seq_attention
 # HPARAMS=lstm_luong_attention_larger_batch_size_2048
 
@@ -25,6 +25,6 @@ python tensor2tensor/bin/t2t_trainer.py \
     --output_dir=$TRAIN_DIR \
     --gpuid=0,1 \
     --worker_gpu=2 \
-    --train_steps=250000
+    --train_steps=40000
 
 
