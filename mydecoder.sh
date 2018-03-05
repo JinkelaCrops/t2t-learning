@@ -4,7 +4,7 @@ HOMEPATH=/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449/t2t_med
 
 PROBLEM=translate_zhen_med_small_vocab
 MODEL=transformer
-HPARAMS=transformer_big_single_gpu_batch_size_2048_warmup_24000
+HPARAMS=transformer_base_single_gpu_batch_size_4096
 
 TMP_DIR=$HOMEPATH/t2t_datagen/medicine
 DATA_DIR=$HOMEPATH/t2t_data/medicine

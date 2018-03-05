@@ -73,5 +73,6 @@ if __name__ == '__main__':
 
 # 0.26694, translate_zhen_med_small_vocab, transformer, transformer_big_batch_size_2048, 2 gpus
 # 0.40032, translate_zhen_med_small_vocab, transformer, transformer_big_single_gpu_batch_size_2048, 2 gpus
-# 0., translate_zhen_med_small_vocab, transformer, transformer_big_single_gpu_batch_size_2048_warmup_24000, 2 gpus
+# 0.30513, translate_zhen_med_small_vocab, transformer, transformer_big_single_gpu_batch_size_2048_warmup_24000, 2 gpus
+# 0., translate_zhen_med_small_vocab, transformer, transformer_base_single_gpu_batch_size_8192, 2 gpus
 
