@@ -1,5 +1,6 @@
 import re
 import numpy as np
+import json
 
 
 # from collections import OrderedDict
@@ -12,7 +13,13 @@ import numpy as np
 #
 # args = parser.parse_args()
 
-class TokenProcess(object):
+class RePattern(object):
+    @staticmethod
+    def regex_between_enzh(regex):
+        return f"\\b{regex}(?=[\u4000-\u9fff]|\\b)|(?<=[\u4000-\u9fff]){regex}(?=[\u4000-\u9fff]|\\b)"
+
+
+class TokenRegexProcess(object):
     level = 1
     regex = " "
     rep = "\uf000"
@@ -24,6 +31,22 @@ class TokenProcess(object):
         pattern = []
         for k, m in enumerate(matcher):
             pattern.append((m.start(), m.end()))
+        return pattern
+
+
+class TokenSubProcess(object):
+    level = 1
+    sub_dict = {" ": " "}
+    rep = "\uf000"
+
+    @classmethod
+    def process(cls, sent):
+        pattern = []
+        for src_wd, tgt_wd in cls.sub_dict.items():
+            matcher = re.finditer(re.escape(src_wd), sent)
+            pattern = []
+            for k, m in enumerate(matcher):
+                pattern.append((m.start(), m.end()))
         return pattern
 
 
@@ -53,59 +76,66 @@ class Token(object):
             self.level_map[token_name] = token_level
             print(f"Token.get_level_map info: reset {token_name} 's level to {token_level}")
 
-    class PercentDecimal(TokenProcess):
+    class PercentDecimal(TokenRegexProcess):
         level = 1
         """55.55%，必须是小数，允许空格"""
         regex = "[0-9][0-9 ]*\.[0-9 ]*[0-9] *%"
         rep = "\uf000"
 
-    class PercentInteger(TokenProcess):
+    class PercentInteger(TokenRegexProcess):
         level = 0.9
         """100%，必须是整数，允许空格"""
         regex = "[0-9][0-9 ]* *%"
         rep = "\uf001"
 
-    class NumericDecimal(TokenProcess):
+    class NumericDecimal(TokenRegexProcess):
         level = 1
         """55.55"""
         regex = "[0-9][0-9 ]*\.[0-9 ]*[0-9]"
         rep = "\uf002"
 
-    class NumericInteger(TokenProcess):
+    class NumericInteger(TokenRegexProcess):
         level = 0
         """5"""
         regex = "[0-9][0-9 ]*[0-9]|[0-9]"
         rep = "\uf003"
 
-    class NumericYear(TokenProcess):
+    class NumericYear(TokenRegexProcess):
         level = 0.9
         """2009"""
-        regex = "1[5-9][0-9]{2}|20[0-1][0-9]"
+        regex = RePattern.regex_between_enzh("1[5-9][0-9]{2}") + '|' + RePattern.regex_between_enzh("20[0-9]{2}")
         rep = "\uf004"
 
-    class TermUpperCase(TokenProcess):
+    class TermUpperCase(TokenRegexProcess):
         level = 0.2
         """DNA"""
-        regex = "\\b[A-Z]+\\b"
+        regex = RePattern.regex_between_enzh("[A-Z]+")
         rep = "\uf005"
 
-    class TermCamelCase(TokenProcess):
+    class TermCamelCase(TokenRegexProcess):
         level = 0.1
         """pH，PubMed, LoL, but not DNA, ID"""
-        regex = "\\b[A-Za-z]+[A-Z]+[A-Za-z]*\\b"
+        regex = RePattern.regex_between_enzh("[A-Za-z]+[A-Z]+[A-Za-z]*")
         rep = "\uf006"
 
-    class TermEnCharWithNum(TokenProcess):
+    class TermEnCharWithNum(TokenRegexProcess):
         level = 0.3
         """EP2"""
-        regex = "\\b[0-9]+[A-Za-z]+[0-9A-Za-z]*\\b|\\b[0-9A-Za-z]*[A-Za-z]+[0-9]+\\b"
+        regex = RePattern.regex_between_enzh("[0-9]+[A-Za-z]+[0-9A-Za-z]*") + "|" + RePattern.regex_between_enzh(
+            "[0-9A-Za-z]*[A-Za-z]+[0-9]+")
         rep = "\uf007"
 
-    class TermChemicalPrefix(TokenProcess):
+    class TermChemicalPrefix(TokenRegexProcess):
         level = 0.3
         """1,3,7-"""
         regex = "(?<![\w\-])([0-9]+ *[,，] *)*[0-9]+\-(?=[A-Za-z\u4000-\u9fff])"
         rep = "\uf008"
+
+    class RomanNum(TokenSubProcess):
+        level = 1
+        """Ⅱ"""
+        sub_dict = {" ": " "}
+        rep = "\uf009"
 
 
 class SentTokenInfo(object):
@@ -116,7 +146,8 @@ class SentTokenInfo(object):
         self.pos_dict = {}
         self.filter_piece = []
         self.filter_pos_dict = {}
-        self.result = sent
+        self.result = ""
+        self.sub_order_dict = {}
 
     @staticmethod
     def sub_space(targets):
@@ -181,11 +212,28 @@ class SentTokenInfo(object):
             self.token_dict[self.pos_dict[pos]].append(re.sub(" ", "", self.sent[pos[0]:pos[1]]))
         return self.token_dict, self.filter_pos_dict
 
+    @property
     def sub_token(self):
-        for pos, rep in self.filter_pos_dict.items():
-            self.result = self.result[:pos[0]] + rep * (pos[1] - pos[0]) + self.result[pos[1]:]
-        self.result = re.sub("([\uf000-\uf009])+", "\\1", self.result)
-        return self.result
+        if self.result:
+            return self.result
+        else:
+            self.result = self.sent
+            piece_keys = sorted(self.filter_pos_dict.keys())
+            for pos in piece_keys:
+                rep = self.filter_pos_dict[pos]
+                self.result = self.result[:pos[0]] + rep * (pos[1] - pos[0]) + self.result[pos[1]:]
+            self.result = re.sub("([\uf000-\uf009])+", "\\1", self.result)
+
+            self.sub_order_dict = [(self.filter_pos_dict[pos], re.sub(" ", "", self.sent[pos[0]:pos[1]])) for pos in
+                                   piece_keys]
+            return self.result
+
+
+def sub_sent(sent, sub_order_dict):
+    for rep, target in sub_order_dict:
+        m = re.search(rep, sent)
+        sent = sent[:m.start()] + target + sent[m.end():]
+    return sent
 
 
 # if __name__ == '__main__':
@@ -231,24 +279,39 @@ if __name__ == "__main__":
     print(np.mean(np.array(ok_flag) == 1))
     print(np.mean(np.array(ok_flag) == 2))
 
-    nonempty_line = []
-    empty_line = []
-    w0 = open(file_path_prefix + ".term_error.ed1", "w", encoding="utf8")
-    w1 = open(file_path_prefix + ".term_empty.ed1", "w", encoding="utf8")
-    w2 = open(file_path_prefix + ".term_nonempty.ed1", "w", encoding="utf8")
+    w0_lines = []
+    w0_order_dict = []
+    w1_lines = []
+    w1_order_dict = []
+    w2_lines = []
+    w2_order_dict = []
+
+    line_k = lambda k: f"00000000{k}"[-10:] + "###" \
+                       + zh_file_dict[k].sub_token + " ||| " \
+                       + en_file_dict[k].sub_token + "\n"
 
     for k in range(len(zh_file_dict)):
         if ok_flag[k] == 2:
-            w2.writelines(
-                f"0000000000{k}"[-10:] + "###" + zh_file_dict[k].sub_token() + " ||| " + en_file_dict[k].sub_token() + "\n")
+            w2_lines.append(line_k(k))
+            w2_order_dict.append(zh_file_dict[k].sub_order_dict)
         elif ok_flag[k] == 1:
-            w1.writelines(
-                f"0000000000{k}"[-10:] + "###" + zh_file_dict[k].sub_token() + " ||| " + en_file_dict[k].sub_token() + "\n")
+            w1_lines.append(line_k(k))
+            w1_order_dict.append(zh_file_dict[k].sub_order_dict)
         else:
-            w0.writelines(
-                f"0000000000{k}"[-10:] + "###" + zh_file_dict[k].sub_token() + " ||| " + en_file_dict[k].sub_token() + "\n")
+            w0_lines.append(line_k(k))
+            w0_order_dict.append(zh_file_dict[k].sub_order_dict)
 
-    w0.close()
-    w1.close()
-    w2.close()
+    with open(file_path_prefix + ".term_error", "w", encoding="utf8") as w0:
+        w0.writelines(w0_lines)
+    with open(file_path_prefix + ".term_error.dict", "w", encoding="utf8") as w0_od:
+        json.dump(w0_order_dict, w0_od, ensure_ascii=False)
 
+    with open(file_path_prefix + ".term_empty", "w", encoding="utf8") as w1:
+        w1.writelines(w1_lines)
+    with open(file_path_prefix + ".term_empty.dict", "w", encoding="utf8") as w1_od:
+        json.dump(w1_order_dict, w1_od, ensure_ascii=False)
+
+    with open(file_path_prefix + ".term_nonempty", "w", encoding="utf8") as w2:
+        w2.writelines(w2_lines)
+    with open(file_path_prefix + ".term_nonempty.dict", "w", encoding="utf8") as w2_od:
+        json.dump(w2_order_dict, w2_od, ensure_ascii=False)
