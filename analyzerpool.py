@@ -2,6 +2,7 @@
 import re
 import numpy as np
 import json
+# from concurrent.futures import ProcessPoolExecutor
 import argparse
 
 parser = argparse.ArgumentParser(description="analyzerpool.py")
@@ -9,6 +10,7 @@ parser.add_argument('-f', "--file_path_prefix")
 parser.add_argument('--report', default=10000, type=int)
 
 args = parser.parse_args()
+
 
 # from collections import OrderedDict
 
@@ -224,15 +226,18 @@ class SentTokenInfo(object):
         if self.result:
             return self.result
         else:
-            self.result = self.sent
             piece_keys = sorted(self.filter_pos_dict.keys())
-            for pos in piece_keys:
-                rep = self.filter_pos_dict[pos]
-                self.result = self.result[:pos[0]] + rep * (pos[1] - pos[0]) + self.result[pos[1]:]
-            self.result = re.sub("([\uf000-\uf009])+", "\\1", self.result)
 
-            self.sub_order_dict = [(self.filter_pos_dict[pos], re.sub(" ", "", self.sent[pos[0]:pos[1]])) for pos in
-                                   piece_keys]
+            ppp = [0] + [i for p in piece_keys for i in p] + [len(self.sent)]
+            ppp = [(ppp[2 * i], ppp[2 * i + 1]) for i in range(len(ppp) // 2)]
+
+            result_ = [self.sent[ppp[0][0]:ppp[0][1]]]
+            for k, p in enumerate(piece_keys):
+                result_.append(self.filter_pos_dict[piece_keys[k]])
+                result_.append(self.sent[ppp[k + 1][0]:ppp[k + 1][1]])
+            self.result = "".join(result_)
+
+            self.sub_order_dict = [(self.filter_pos_dict[pos], self.sent[pos[0]:pos[1]]) for pos in piece_keys]
             return self.result
 
 
@@ -243,12 +248,25 @@ def sub_sent(sent, sub_order_dict):
     return sent
 
 
+# def main(data_with_lineNo, tokens):
+#     data_file_dict = {}
+#     for k, line in data_with_lineNo.items():
+#         lk = SentTokenInfo(line[:-1])
+#         lk.execute_token(tokens)
+#         data_file_dict[k] = lk
+#     return data_file_dict
+
+#     myexecutor = ProcessPoolExecutor(max_workers=opt.workers)
+#     myexecutor.map()
+
+
 # if __name__ == '__main__':
-#     zh = "结果在分离的3 947株病原菌中,革兰阴性菌3 169株(80. 3%),革兰阳性菌778株(19. 7%)。"
+#     zh = "Result ais 在分离的 3 947 株病原菌中，革兰阴性菌 3 169 株 (80. 3%), 革兰阳性菌 778 株 (19. 7%)。"
 #     tokens = Token()
 #     lk = SentTokenInfo(zh)
 #     lk.execute_token(tokens)
 #     print(lk.filter_piece)
+
 
 if __name__ == "__main__":
     file_path_prefix = args.file_path_prefix
@@ -297,9 +315,7 @@ if __name__ == "__main__":
     w2_lines = []
     w2_order_dict = []
 
-    line_k = lambda k: f"00000000{k}"[-10:] + "###" \
-                       + zh_file_dict[k].sub_token + " ||| " \
-                       + en_file_dict[k].sub_token + "\n"
+    line_k = lambda k: zh_file_dict[k].sub_token + " ||| " + en_file_dict[k].sub_token + "\n"
 
     for k in range(len(zh_file_dict)):
         if ok_flag[k] == 2:

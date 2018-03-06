@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 
 def unpack(line, sep=" ||| "):
-    zh, en = line[13:].replace("###", "").strip().split(sep)
+    zh, en = line.strip().split(sep)
     return zh, en
 
 
