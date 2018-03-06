@@ -10,7 +10,8 @@ TRAIN_DIR=$HOMEPATH/t2t_train/new_medicine/$PROBLEM/$MODEL-$HPARAMS
 
 # Decode
 DECODE_FILE=$TMP_DIR/med_zhen_30000k_tok_dev.lang1
-OUTPUT_FILE=$TRAIN_DIR/translation.en
+#DECODE_FILE=$HOMEPATH/t2t_datagen/med_test/seg.src.test.txt.zh
+OUTPUT_FILE=$TRAIN_DIR/translation.en.test
 
 BEAM_SIZE=4
 ALPHA=0.6
@@ -34,5 +35,6 @@ head -10 $OUTPUT_FILE
 # Evaluate the BLEU score
 # Note: Report this BLEU score in papers, not the internal approx_bleu metric.
 REF_FILE=$TMP_DIR/med_zhen_30000k_tok_dev.lang2
+#REF_FILE=$HOMEPATH/t2t_datagen/med_test/seg.src.test.txt.en
 TGT_FILE=$OUTPUT_FILE
 python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l en
