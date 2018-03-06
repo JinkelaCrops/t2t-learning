@@ -42,6 +42,7 @@ from tensor2tensor.data_generators import translate_enmk
 from tensor2tensor.data_generators import translate_enzh
 from tensor2tensor.data_generators import translate_ai_enzh
 from tensor2tensor.data_generators import translate_ai_zhen
+from tensor2tensor.data_generators import translate_ai_new_zhen
 from tensor2tensor.data_generators import wiki
 from tensor2tensor.data_generators import wsj_parsing
 
