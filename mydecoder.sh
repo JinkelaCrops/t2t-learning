@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-PROBLEM=translate_zhen_med_small_vocab
+PROBLEM=translate_zhen_new_med_small_vocab
 MODEL=transformer
 HPARAMS=transformer_base_single_gpu_batch_size_4096
 
-TMP_DIR=$HOMEPATH/t2t_datagen/medicine
-DATA_DIR=$HOMEPATH/t2t_data/medicine
-TRAIN_DIR=$HOMEPATH/t2t_train/medicine/$PROBLEM/$MODEL-$HPARAMS
+TMP_DIR=$HOMEPATH/t2t_datagen/new_medicine
+DATA_DIR=$HOMEPATH/t2t_data/new_medicine
+TRAIN_DIR=$HOMEPATH/t2t_train/new_medicine/$PROBLEM/$MODEL-$HPARAMS
 
 # Decode
 DECODE_FILE=$TMP_DIR/med_zhen_30000k_tok_dev.lang1
