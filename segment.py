@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description="segment.py")
 parser.add_argument('-f', "--file_path")
 parser.add_argument('-l', "--language")
 parser.add_argument('-p', "--report", default=10000, type=int)
-parser.add_argument("--zh_seg_tool", default="hanlp")
+parser.add_argument("--zh_seg_tool", default="jieba")
 parser.add_argument("--hanlp_path", default="/media/yanpan/7D4CF1590195F939/Softwares/hanlp")
 parser.add_argument("--hanlp_class_path_sep", default=":")
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     file_name = file_path.replace("\\", "/").split("/")[-1]
     file_father_dir = "/".join(file_path.replace("\\", "/").split("/")[:-1])
 
-    if lan == "zh":
+    if args.language == "zh":
         if args.zh_seg_tool not in ["hanlp", "jieba"]:
             sys.exit(1)
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
         elif args.zh_seg_tool == "jieba":
             seg_lines = segment_process(file_path, SegmentJieba)
 
-    if lan == "en":
+    if args.language == "en":
         seg_lines = segment_process(file_path, SegmentNLTK)
 
     with open(f"{file_father_dir}/seg.{file_name}", "w", encoding="utf8") as f:

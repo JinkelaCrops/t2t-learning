@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 
 def unpack(line, sep=" ||| "):
-    zh, en = line.strip().split(sep)
+    zh, en = line[13:].replace("###", "").strip().split(sep)
     return zh, en
 
 
@@ -32,9 +32,12 @@ if __name__ == '__main__':
     zhs = []
     ens = []
     for line in data:
-        zh, en = unpack(line, sep=args.separator)
-        zhs.append(zh)
-        ens.append(en)
+        try:
+            zh, en = unpack(line, sep=args.separator)
+            zhs.append(zh)
+            ens.append(en)
+        except Exception as e:
+            print(line)
 
     with open(f"{file_path_prefix}.term.en", "w", encoding="utf8") as f:
         f.writelines([x + "\n" for x in ens])

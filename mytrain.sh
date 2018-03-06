@@ -2,7 +2,7 @@
 
 # python tensor2tensor/bin/t2t_trainer.py --registry_help
 
-HOMEPATH=../t2t_med
+HOMEPATH=/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449/t2t_med
 
 PROBLEM=translate_zhen_med_small_vocab
 MODEL=transformer
@@ -25,6 +25,6 @@ python tensor2tensor/bin/t2t_trainer.py \
     --output_dir=$TRAIN_DIR \
     --gpuid=0,1 \
     --worker_gpu=2 \
-    --train_steps=40000
+    --train_steps=80000
 
 

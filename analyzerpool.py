@@ -6,6 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description="analyzerpool.py")
 parser.add_argument('-f', "--file_path_prefix")
+parser.add_argument('--report', default=10000, type=int)
 
 args = parser.parse_args()
 
@@ -261,6 +262,8 @@ if __name__ == "__main__":
             lk = SentTokenInfo(line[:-1])
             lk.execute_token(tokens)
             zh_file_dict[k] = lk
+            if k % args.report == args.report - 1:
+                print(f"analyzerpool info: execute zh sentence No.{k+1}")
 
     en_file_dict = {}
     with open(en_file_path, "r", encoding="utf8") as f:
@@ -268,6 +271,8 @@ if __name__ == "__main__":
             lk = SentTokenInfo(line[:-1])
             lk.execute_token(tokens)
             en_file_dict[k] = lk
+            if k % args.report == args.report - 1:
+                print(f"analyzerpool info: execute en sentence No.{k+1}")
 
 
     def flag_gen(i):
@@ -306,6 +311,8 @@ if __name__ == "__main__":
         else:
             w0_lines.append(line_k(k))
             w0_order_dict.append(zh_file_dict[k].sub_order_dict)
+        if k % args.report == args.report - 1:
+            print(f"analyzerpool info: generate dict for zh sentence No.{k+1}")
 
     # use train.dict for the order is mostly the same
     filter_func = lambda k: zh_file_dict[k].sub_order_dict != en_file_dict[k].sub_order_dict and \
