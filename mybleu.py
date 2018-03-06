@@ -65,6 +65,7 @@ if __name__ == '__main__':
 # 0.09039, translate_enzh_wmt8k, lstm_seq2seq_attention, lstm_luong_attention_multi
 # 0.40956, translate_enzh_med, transformer, transformer_base_single_gpu
 # 0.28273, translate_zhen_med, transformer, transformer_base_single_gpu
+# 0.22729, translate_zhen_med, lstm_seq2seq_attention, lstm_luong_attention_batch_size_2048
 # 0.32275, translate_zhen_med, opennmt baseline
 
 # 0.31475, translate_zhen_med, transformer, transformer_base_single_gpu_batch_size_4096, 2 gpus
@@ -74,5 +75,4 @@ if __name__ == '__main__':
 # 0.26694, translate_zhen_med_small_vocab, transformer, transformer_big_batch_size_2048, 2 gpus
 # 0.40032, translate_zhen_med_small_vocab, transformer, transformer_big_single_gpu_batch_size_2048, 2 gpus
 # 0.30513, translate_zhen_med_small_vocab, transformer, transformer_big_single_gpu_batch_size_2048_warmup_24000, 2 gpus
-# 0., translate_zhen_med_small_vocab, transformer, transformer_base_single_gpu_batch_size_4096, 2 gpus
-
+# 0.32834, translate_zhen_med_small_vocab, transformer, transformer_base_single_gpu_batch_size_4096, 2 gpus
