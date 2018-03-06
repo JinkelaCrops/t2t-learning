@@ -10,7 +10,6 @@ parser.add_argument('--train_prefix', default="train")
 parser.add_argument('--valid_prefix', default="valid")
 parser.add_argument("--valid_size", default=10000, type=int)
 parser.add_argument("--shuffle", default=True, type=bool)
-
 args = parser.parse_args()
 
 
