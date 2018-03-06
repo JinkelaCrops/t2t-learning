@@ -13,7 +13,7 @@ hanlp_class_path_sep = ":"
 parser = argparse.ArgumentParser(description="segment.py")
 parser.add_argument('-f', "--file_path")
 parser.add_argument('-l', "--language")
-parser.add_argument('-p', "--report", default=10000)
+parser.add_argument('-p', "--report", default=10000, type=int)
 
 args = parser.parse_args()
 
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     file_path = args.file_path
     file_name = file_path.replace("\\", "/").split("/")[-1]
     file_father_dir = "/".join(file_path.replace("\\", "/").split("/")[:-1])
-    report_every = int(args.report)
+    report_every = args.report
     seg_lines = []
 
     if lan == "zh":

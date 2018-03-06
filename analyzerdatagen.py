@@ -1,28 +1,26 @@
+# -*- coding: utf-8 -*-
 import re
 import json
 import random
+import argparse
+
+parser = argparse.ArgumentParser(description="analyzerdatagen.py")
+parser.add_argument('-f', "--file_path_prefix")
+parser.add_argument("--separator")
+
+args = parser.parse_args()
 
 
-def unpack(line, id_sep="###", sep=" ||| "):
-    id, line = line.split(id_sep)
+def unpack(line, sep=" ||| "):
     zh, en = line.strip().split(sep)
-    # id = int(re.sub("^0+", "", id))
     return zh, en
 
 
-def train_valid_split(data, size=10000, shuffle=True):
-    if shuffle:
-        random.seed(0)
-        data = random.sample(data, len(data))
-    train = data[:-size]
-    valid = data[-size:]
-    return train, valid
-
-
 if __name__ == '__main__':
-    file_path = "../t2t_med/t2t_datagen/medicine"
-    filename_list = [file_path + "/medicine.sample.big.txt.term_nonempty",
-                     file_path + "/medicine.sample.big.txt.term_empty", ]
+    file_path_prefix = args.file_path_prefix
+    filename_list = [file_path_prefix + ".term_nonempty",
+                     file_path_prefix + ".term_empty", ]
+
     data = []
     data_dict = []
     for filename in filename_list:
@@ -34,24 +32,14 @@ if __name__ == '__main__':
     zhs = []
     ens = []
     for line in data:
-        zh, en = unpack(line, id_sep="###", sep=" ||| ")
+        zh, en = unpack(line, sep=args.separator)
         zhs.append(zh)
         ens.append(en)
 
-    train_zh, valid_zh = train_valid_split(zhs, 1000, True)
-    train_en, valid_en = train_valid_split(ens, 1000, True)
-    train_zh_dict, valid_zh_dict = train_valid_split(data_dict, 1000, True)
-
-    with open(file_path + "/new_medicine/train.en", "w", encoding="utf8") as f:
-        f.writelines([x + "\n" for x in train_en])
-    with open(file_path + "/new_medicine/train.zh", "w", encoding="utf8") as f:
-        f.writelines([x + "\n" for x in train_zh])
-    with open(file_path + "/new_medicine/valid.en", "w", encoding="utf8") as f:
-        f.writelines([x + "\n" for x in valid_en])
-    with open(file_path + "/new_medicine/valid.zh", "w", encoding="utf8") as f:
-        f.writelines([x + "\n" for x in valid_zh])
-    # todo: train_zh_dict or train_en_dict ?
-    with open(file_path + "/new_medicine/train.zh.dict", "w", encoding="utf8") as f:
-        json.dump(train_zh_dict, f, ensure_ascii=False)
-    with open(file_path + "/new_medicine/valid.zh.dict", "w", encoding="utf8") as f:
-        json.dump(valid_zh_dict, f, ensure_ascii=False)
+    with open(f"{file_path_prefix}.term.en", "w", encoding="utf8") as f:
+        f.writelines([x + "\n" for x in ens])
+    with open(f"{file_path_prefix}.term.zh", "w", encoding="utf8") as f:
+        f.writelines([x + "\n" for x in zhs])
+    # use train.dict for the order is mostly the same
+    with open(f"{file_path_prefix}.term.dict", "w", encoding="utf8") as f:
+        json.dump(data_dict, f, ensure_ascii=False)

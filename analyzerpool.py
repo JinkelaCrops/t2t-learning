@@ -1,7 +1,13 @@
+# -*- coding: utf-8 -*-
 import re
 import numpy as np
 import json
+import argparse
 
+parser = argparse.ArgumentParser(description="analyzerpool.py")
+parser.add_argument('-f', "--file_path_prefix")
+
+args = parser.parse_args()
 
 # from collections import OrderedDict
 
@@ -244,7 +250,7 @@ def sub_sent(sent, sub_order_dict):
 #     print(lk.filter_piece)
 
 if __name__ == "__main__":
-    file_path_prefix = "../t2t_med/t2t_datagen/medicine/medicine.sample.big.txt"
+    file_path_prefix = args.file_path_prefix
     zh_file_path = file_path_prefix + ".zh"
     en_file_path = file_path_prefix + ".en"
 
@@ -300,6 +306,13 @@ if __name__ == "__main__":
         else:
             w0_lines.append(line_k(k))
             w0_order_dict.append(zh_file_dict[k].sub_order_dict)
+
+    # use train.dict for the order is mostly the same
+    filter_func = lambda k: zh_file_dict[k].sub_order_dict != en_file_dict[k].sub_order_dict and \
+                            any([zh_file_dict[k].token_dict[p] != en_file_dict[k].token_dict[p] for p in
+                                 zh_file_dict[k].token_dict.keys()])
+    order_flag = [filter_func(k) for k in range(len(zh_file_dict)) if ok_flag[k] > 0]
+    print("different order percent: %5f" % (sum(order_flag) / len(order_flag)))
 
     with open(file_path_prefix + ".term_error", "w", encoding="utf8") as w0:
         w0.writelines(w0_lines)

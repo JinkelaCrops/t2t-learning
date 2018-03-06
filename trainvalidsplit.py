@@ -4,8 +4,8 @@ import argparse
 
 parser = argparse.ArgumentParser(description="trainvalidsplit.py")
 parser.add_argument('-f', "--file_path_prefix")
-parser.add_argument('-z', "--valid_size", default=10000)
-parser.add_argument('-s', "--shuffle", default=True)
+parser.add_argument('-z', "--valid_size", default=10000, type=int)
+parser.add_argument('-s', "--shuffle", default=True, type=bool)
 
 args = parser.parse_args()
 
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     zh_file_path = file_path_prefix + ".zh"
     en_file_path = file_path_prefix + ".en"
 
-    valid_size = int(args.valid_size)
+    valid_size = args.valid_size
     # input zh
     with open(zh_file_path, "r", encoding="utf8") as f:
         zh_data = f.readlines()
