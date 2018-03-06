@@ -27,6 +27,7 @@ def decode_sent(sents, sents_dict):
                 zh_decode.append(sub_sent(sent, sub_dict))
         except:
             bad_sents.append([sent, sub_dict])
+            zh_decode.append(sent)
     if len(bad_sents) > 0:
         print("decode_sent: warning: bad_sent!")
     return zh_decode

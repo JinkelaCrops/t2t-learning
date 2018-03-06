@@ -6,7 +6,7 @@ import argparse
 parser = argparse.ArgumentParser(description="unpack.py")
 
 parser.add_argument('-f', "--file_path")
-parser.add_argument('-s', "--separator")
+parser.add_argument('-s', "--separator", default="\t")
 
 args = parser.parse_args()
 

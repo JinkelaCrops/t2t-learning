@@ -32,6 +32,9 @@ python analyzertrainvalidsplit.py -f $TMP_DIR/seg.$FILE_NAME.term.train --valid_
 python analyzerdecode.py -f $TMP_DIR/$FILE_NAME.term.test.zh -d $TMP_DIR/$FILE_NAME.term.test.dict -t $TMP_DIR/src.test.zh
 python analyzerdecode.py -f $TMP_DIR/$FILE_NAME.term.test.en -d $TMP_DIR/$FILE_NAME.term.test.dict -t $TMP_DIR/src.test.en
 
+python analyzerdecode.py -f $TMP_DIR/valid.zh -d $TMP_DIR/valid.dict -t $TMP_DIR/src.valid.zh
+python analyzerdecode.py -f $TMP_DIR/valid.en -d $TMP_DIR/valid.dict -t $TMP_DIR/src.valid.en
+
 cd $TMP_DIR
 cd ..
 tar -cvf $TASK/$TASK.tar.gz $TASK/train.en $TASK/train.zh $TASK/valid.en $TASK/valid.zh
