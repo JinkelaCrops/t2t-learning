@@ -2,6 +2,7 @@
 import re
 import numpy as np
 import json
+import sys
 # from concurrent.futures import ProcessPoolExecutor
 import argparse
 
@@ -351,3 +352,5 @@ if __name__ == "__main__":
         w2.writelines(w2_lines)
     with open(file_path_prefix + ".term_nonempty.dict", "w", encoding="utf8") as w2_od:
         json.dump(w2_order_dict, w2_od, ensure_ascii=False)
+
+    sys.exit(0)
