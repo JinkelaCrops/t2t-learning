@@ -57,4 +57,4 @@ if __name__ == '__main__':
 
     train_valid_split(zh_file_path, file_dir, "zh", args.valid_size, args.shuffle, io_type="raw")
     train_valid_split(en_file_path, file_dir, "en", args.valid_size, args.shuffle, io_type="raw")
-    train_valid_split(zh_file_dict_path, file_dir, "zh.dict", args.valid_size, args.shuffle, io_type="json")
+    train_valid_split(zh_file_dict_path, file_dir, "dict", args.valid_size, args.shuffle, io_type="json")
