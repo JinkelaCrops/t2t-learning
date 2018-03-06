@@ -1,20 +1,11 @@
 #!/usr/bin/env bash
 
-source activate py36
-
 TASK=tmxmall_med
 TMP_DIR=$HOMEPATH/t2t_datagen/$TASK
 FILE_NAME=Tmxmall医学语料_en-US_zh-CN_zh-CN_en-US.txt
 
-# unpack
-python unpack.py -f $TMP_DIR/$FILE_NAME
-
-# segment
-python segment.py -f $TMP_DIR/$FILE_NAME.zh -l zh
-python segment.py -f $TMP_DIR/$FILE_NAME.en -l en
-
 # decoder
-PROBLEM=translate_zhen_med_small_vocab
+PROBLEM=translate_zhen_med
 MODEL=transformer
 HPARAMS=transformer_base_single_gpu_batch_size_4096
 
@@ -48,4 +39,4 @@ head -1 $OUTPUT_FILE
 # Note: Report this BLEU score in papers, not the internal approx_bleu metric.
 REF_FILE=$TMP_DIR/seg.$FILE_NAME.en
 TGT_FILE=$OUTPUT_FILE
-python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l en
+python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l en --lower True

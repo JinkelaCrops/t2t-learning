@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-PROBLEM=translate_zhen_new_med_small_vocab
+PROBLEM=translate_zhen_med_small_vocab
 MODEL=transformer
 HPARAMS=transformer_base_single_gpu_batch_size_4096
 
-TMP_DIR=$HOMEPATH/t2t_datagen/new_medicine
+TMP_DIR=$HOMEPATH/t2t_datagen/tmxmall_med
 DATA_DIR=$HOMEPATH/t2t_data/new_medicine
 TRAIN_DIR=$HOMEPATH/t2t_train/new_medicine/$PROBLEM/$MODEL-$HPARAMS
 
