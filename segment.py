@@ -4,13 +4,16 @@
 """
 
 import nltk
+import jieba
 from jpype import *
+import sys
 import argparse
 
 parser = argparse.ArgumentParser(description="segment.py")
 parser.add_argument('-f', "--file_path")
 parser.add_argument('-l', "--language")
 parser.add_argument('-p', "--report", default=10000, type=int)
+parser.add_argument("--zh_seg_tool", default="hanlp")
 parser.add_argument("--hanlp_path", default="/media/yanpan/7D4CF1590195F939/Softwares/hanlp")
 parser.add_argument("--hanlp_class_path_sep", default=":")
 
@@ -87,34 +90,49 @@ class SegmentHanLP(object):
         return tokens
 
 
+class SegmentJieba(object):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def process(zh_sentence):
+        tokens = list(jieba.cut(zh_sentence, HMM=False))
+        return tokens
+
+
+def segment_process(file_path, process_class):
+    seg_lines = []
+    with open(file_path, "r", encoding="utf8") as f:
+        for k, line in enumerate(f):
+            seg_line = process_class.process(line.strip())
+            seg_lines.append(" ".join(seg_line))
+            if k % args.report == args.report - 1:
+                print(f"segment info: {args.language} segment step {k+1}")
+    return seg_lines
+
+
 if __name__ == '__main__':
-    lan = args.language
     file_path = args.file_path
     file_name = file_path.replace("\\", "/").split("/")[-1]
     file_father_dir = "/".join(file_path.replace("\\", "/").split("/")[:-1])
-    report_every = args.report
-    seg_lines = []
 
     if lan == "zh":
+        if args.zh_seg_tool not in ["hanlp", "jieba"]:
+            sys.exit(1)
 
-        startJVM(getDefaultJVMPath(),
-                 f"-Djava.class.path={args.hanlp_path}/hanlp-1.5.4.jar{args.hanlp_class_path_sep}{args.hanlp_path}",
-                 "-Xms1g", "-Xmx1g")  # 启动JVM，Linux需替换分号;为冒号:
-        with open(file_path, "r", encoding="utf8") as f:
-            for k, line in enumerate(f):
-                seg_line = SegmentHanLP.process(line.strip())
-                seg_lines.append(" ".join(seg_line))
-                if k % report_every == report_every - 1:
-                    print(f"segment info: {lan} segment step {k+1}")
-        shutdownJVM()
+        if args.zh_seg_tool == "hanlp":
+
+            startJVM(getDefaultJVMPath(),
+                     f"-Djava.class.path={args.hanlp_path}/hanlp-1.5.4.jar{args.hanlp_class_path_sep}{args.hanlp_path}",
+                     "-Xms1g", "-Xmx1g")  # 启动JVM，Linux需替换分号;为冒号:
+            seg_lines = segment_process(file_path, SegmentHanLP)
+            shutdownJVM()
+
+        elif args.zh_seg_tool == "jieba":
+            seg_lines = segment_process(file_path, SegmentJieba)
 
     if lan == "en":
-        with open(file_path, "r", encoding="utf8") as f:
-            for k, line in enumerate(f):
-                seg_line = SegmentNLTK.process(line.strip())
-                seg_lines.append(" ".join(seg_line))
-                if k % report_every == report_every - 1:
-                    print(f"segment info: {lan} segment step {k+1}")
+        seg_lines = segment_process(file_path, SegmentNLTK)
 
     with open(f"{file_father_dir}/seg.{file_name}", "w", encoding="utf8") as f:
         f.writelines(["%s\n" % line for line in seg_lines])
