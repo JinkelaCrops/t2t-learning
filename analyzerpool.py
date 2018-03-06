@@ -353,4 +353,4 @@ if __name__ == "__main__":
     with open(file_path_prefix + ".term_nonempty.dict", "w", encoding="utf8") as w2_od:
         json.dump(w2_order_dict, w2_od, ensure_ascii=False)
 
-    sys.exit(0)
+    assert 1 > 2
