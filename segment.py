@@ -7,13 +7,12 @@ import nltk
 from jpype import *
 import argparse
 
-hanlp_path = "/media/yanpan/7D4CF1590195F939/Softwares/hanlp"
-hanlp_class_path_sep = ":"
-
 parser = argparse.ArgumentParser(description="segment.py")
 parser.add_argument('-f', "--file_path")
 parser.add_argument('-l', "--language")
 parser.add_argument('-p', "--report", default=10000, type=int)
+parser.add_argument("--hanlp_path", default="/media/yanpan/7D4CF1590195F939/Softwares/hanlp")
+parser.add_argument("--hanlp_class_path_sep", default=":")
 
 args = parser.parse_args()
 
@@ -99,7 +98,7 @@ if __name__ == '__main__':
     if lan == "zh":
 
         startJVM(getDefaultJVMPath(),
-                 f"-Djava.class.path={hanlp_path}/hanlp-1.5.4.jar{hanlp_class_path_sep}{hanlp_path}",
+                 f"-Djava.class.path={args.hanlp_path}/hanlp-1.5.4.jar{args.hanlp_class_path_sep}{args.hanlp_path}",
                  "-Xms1g", "-Xmx1g")  # 启动JVM，Linux需替换分号;为冒号:
         with open(file_path, "r", encoding="utf8") as f:
             for k, line in enumerate(f):
