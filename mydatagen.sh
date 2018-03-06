@@ -2,9 +2,9 @@
 
 # python tensor2tensor/bin/t2t_trainer.py --registry_help
 
-PROBLEM=translate_zhen_med_small_vocab
-TMP_DIR=$HOMEPATH/t2t_datagen/medicine
-DATA_DIR=$HOMEPATH/t2t_data/medicine
+PROBLEM=translate_zhen_new_med_small_vocab
+TMP_DIR=$HOMEPATH/t2t_datagen/new_medicine
+DATA_DIR=$HOMEPATH/t2t_data/new_medicine
 
 mkdir -p $DATA_DIR $TMP_DIR
 

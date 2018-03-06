@@ -141,14 +141,14 @@ class TranslateZhenNewMed(translate.TranslateProblem):
 
 
 @registry.register_problem
-class TranslateZhenNewMedSimple(TranslateZhenMed):
+class TranslateZhenNewMedSimple(TranslateZhenNewMed):
     @property
     def targeted_vocab_size(self):
         return 8000
 
 
 @registry.register_problem
-class TranslateZhenNewMedSmallVocab(TranslateZhenMed):
+class TranslateZhenNewMedSmallVocab(TranslateZhenNewMed):
     @property
     def targeted_vocab_size(self):
         return 30000
