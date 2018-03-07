@@ -14,7 +14,7 @@ args = parser.parse_args()
 def sub_sent(sent, sub_order_dict):
     for rep, target in sub_order_dict:
         m = re.search(rep, sent)
-        sent = sent[:m.start()] + target + sent[m.end():]
+        sent = sent[:m.start()] + target + sent[m.end():] if m is not None else sent
     return sent
 
 
@@ -25,7 +25,7 @@ def decode_sent(sents, sents_dict):
         try:
             if len(sub_dict) > 0:
                 zh_decode.append(sub_sent(sent, sub_dict))
-        except:
+        except Exception as e:
             bad_sents.append([sent, sub_dict])
             zh_decode.append(sent)
     if len(bad_sents) > 0:
