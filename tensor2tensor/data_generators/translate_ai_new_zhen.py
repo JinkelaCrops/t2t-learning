@@ -162,3 +162,11 @@ class TranslateZhenNewMedSmallVocabCopy(TranslateZhenNewMed):
 
     def __init__(self):
         super(TranslateZhenNewMedSmallVocabCopy, self).__init__(False, True)
+
+    @property
+    def source_vocab_name(self):
+        return "med.vocab.zhen.copy-zh.%d" % self.targeted_vocab_size
+
+    @property
+    def target_vocab_name(self):
+        return "med.vocab.zhen.copy-en.%d" % self.targeted_vocab_size
