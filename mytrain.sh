@@ -21,8 +21,8 @@ python tensor2tensor/bin/t2t_trainer.py \
     --model=$MODEL \
     --hparams_set=$HPARAMS \
     --output_dir=$TRAIN_DIR \
-    --gpuid=0,1 \
-    --worker_gpu=2 \
-    --train_steps=250000
+    --gpuid=0 \
+    --worker_gpu=1 \
+    --train_steps=2000
 
 

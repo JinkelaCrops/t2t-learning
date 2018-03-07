@@ -4,7 +4,7 @@ import re
 class RePattern(object):
     @staticmethod
     def regex_between_enzh(regex):
-        return f"\\b{regex}(?=[\u4000-\u9fff]|\\b)|(?<=[\u4000-\u9fff]){regex}(?=[\u4000-\u9fff]|\\b)"
+        return f"\\b{regex}(?=[\u4e00-\u9fff]|\\b)|(?<=[\u4e00-\u9fff]){regex}(?=[\u4e00-\u9fff]|\\b)"
 
 
 class TokenRegexProcess(object):
@@ -116,7 +116,7 @@ class Token(object):
     class TermChemicalPrefix(TokenRegexProcess):
         level = 0.3
         """1,3,7-"""
-        regex = "(?<![\w\-])([0-9]+ *[,，] *)*[0-9]+\-(?=[A-Za-z\u4000-\u9fff])"
+        regex = "(?<![\w\-])([0-9]+ *[,，] *)*[0-9]+\-(?=[A-Za-z\u4e00-\u9fff])"
         rep = "TermChemicalPrefix"
 
     class RomanNum(TokenSubProcess):
@@ -214,7 +214,7 @@ class SentTokenInfo(object):
             for k, p in enumerate(piece_keys):
                 result_.append(self.filter_pos_dict[piece_keys[k]])
                 result_.append(self.sent[ppp[k + 1][0]:ppp[k + 1][1]])
-            self.result = " ".join(result_)
+            self.result = "".join(result_)
 
             self.sub_order_dict = [(self.filter_pos_dict[pos], self.sent[pos[0]:pos[1]]) for pos in piece_keys]
             return self.result
