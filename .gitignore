@@ -17,5 +17,3 @@ dist/
 *.sublime-project
 *.sublime-workspace
 
-# .sh
-*.sh

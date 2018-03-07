@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 
-PROBLEM=translate_zhen_med_small_vocab
+TASK=tmxmall_med
+TMP_DIR=$HOMEPATH/t2t_datagen/$TASK
+FILE_NAME=Tmxmall医学语料_en-US_zh-CN_zh-CN_en-US.txt
+
+# decoder
+PROBLEM=translate_zhen_med
 MODEL=transformer
 HPARAMS=transformer_base_single_gpu_batch_size_4096
 
-TMP_DIR=$HOMEPATH/t2t_datagen/tmxmall_med
-DATA_DIR=$HOMEPATH/t2t_data/new_medicine
-TRAIN_DIR=$HOMEPATH/t2t_train/new_medicine/$PROBLEM/$MODEL-$HPARAMS
+DATA_DIR=$HOMEPATH/t2t_data/medicine
+TRAIN_DIR=$HOMEPATH/t2t_train/medicine/$PROBLEM/$MODEL-$HPARAMS
 
 # Decode
-DECODE_FILE=$TMP_DIR/med_zhen_30000k_tok_dev.lang1
-#DECODE_FILE=$HOMEPATH/t2t_datagen/med_test/seg.src.test.txt.zh
-OUTPUT_FILE=$TRAIN_DIR/translation.en.test
+DECODE_FILE=$TMP_DIR/seg.$FILE_NAME.zh
+OUTPUT_FILE=$TMP_DIR/translation.en
 
 BEAM_SIZE=4
 ALPHA=0.6
@@ -34,7 +37,6 @@ head -1 $OUTPUT_FILE
 
 # Evaluate the BLEU score
 # Note: Report this BLEU score in papers, not the internal approx_bleu metric.
-REF_FILE=$TMP_DIR/med_zhen_30000k_tok_dev.lang2
-#REF_FILE=$HOMEPATH/t2t_datagen/med_test/seg.src.test.txt.en
+REF_FILE=$TMP_DIR/seg.$FILE_NAME.en
 TGT_FILE=$OUTPUT_FILE
-python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l en
+python mybleu.py -rf $REF_FILE -tf $TGT_FILE -l en --lower True

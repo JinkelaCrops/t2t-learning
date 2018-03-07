@@ -90,62 +90,62 @@ class Token(object):
         level = 1
         """55.55%，必须是小数，允许空格"""
         regex = "[0-9][0-9 ]*\.[0-9 ]*[0-9] *%"
-        rep = "\uf000"
+        rep = "PercentDecimal"
 
     class PercentInteger(TokenRegexProcess):
         level = 0.9
         """100%，必须是整数，允许空格"""
         regex = "[0-9][0-9 ]* *%"
-        rep = "\uf001"
+        rep = "PercentInteger"
 
     class NumericDecimal(TokenRegexProcess):
         level = 1
         """55.55"""
         regex = "[0-9][0-9 ]*\.[0-9 ]*[0-9]"
-        rep = "\uf002"
+        rep = "NumericDecimal"
 
     class NumericInteger(TokenRegexProcess):
         level = 0
         """5"""
         regex = "[0-9][0-9 ]*[0-9]|[0-9]"
-        rep = "\uf003"
+        rep = "NumericInteger"
 
     class NumericYear(TokenRegexProcess):
         level = 0.9
         """2009"""
         regex = RePattern.regex_between_enzh("1[5-9][0-9]{2}") + '|' + RePattern.regex_between_enzh("20[0-9]{2}")
-        rep = "\uf004"
+        rep = "NumericYear"
 
     class TermUpperCase(TokenRegexProcess):
         level = 0.2
         """DNA"""
         regex = RePattern.regex_between_enzh("[A-Z]+")
-        rep = "\uf005"
+        rep = "TermUpperCase"
 
     class TermCamelCase(TokenRegexProcess):
         level = 0.1
         """pH，PubMed, LoL, but not DNA, ID"""
         regex = RePattern.regex_between_enzh("[A-Za-z]+[A-Z]+[A-Za-z]*")
-        rep = "\uf006"
+        rep = "TermCamelCase"
 
     class TermEnCharWithNum(TokenRegexProcess):
         level = 0.3
         """EP2"""
         regex = RePattern.regex_between_enzh("[0-9]+[A-Za-z]+[0-9A-Za-z]*") + "|" + RePattern.regex_between_enzh(
             "[0-9A-Za-z]*[A-Za-z]+[0-9]+")
-        rep = "\uf007"
+        rep = "TermEnCharWithNum"
 
     class TermChemicalPrefix(TokenRegexProcess):
         level = 0.3
         """1,3,7-"""
         regex = "(?<![\w\-])([0-9]+ *[,，] *)*[0-9]+\-(?=[A-Za-z\u4000-\u9fff])"
-        rep = "\uf008"
+        rep = "TermChemicalPrefix"
 
     class RomanNum(TokenSubProcess):
         level = 1
         """Ⅱ"""
         sub_dict = {" ": " "}
-        rep = "\uf009"
+        rep = "RomanNum"
 
 
 class SentTokenInfo(object):
@@ -236,7 +236,7 @@ class SentTokenInfo(object):
             for k, p in enumerate(piece_keys):
                 result_.append(self.filter_pos_dict[piece_keys[k]])
                 result_.append(self.sent[ppp[k + 1][0]:ppp[k + 1][1]])
-            self.result = "".join(result_)
+            self.result = " ".join(result_)
 
             self.sub_order_dict = [(self.filter_pos_dict[pos], self.sent[pos[0]:pos[1]]) for pos in piece_keys]
             return self.result
@@ -353,5 +353,4 @@ if __name__ == "__main__":
     with open(file_path_prefix + ".term_nonempty.dict", "w", encoding="utf8") as w2_od:
         json.dump(w2_order_dict, w2_od, ensure_ascii=False)
 
-
-    sys.exit(0)
+    assert 1 > 2

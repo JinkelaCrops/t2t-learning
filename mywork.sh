@@ -2,7 +2,6 @@
 
 source activate py36
 
-HOMEPATH=/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449/t2t_med
 TMP_DIR=$HOMEPATH/t2t_datagen/medicine
 FILE_NAME=medicine.sample.big.txt
 
