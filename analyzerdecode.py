@@ -21,10 +21,12 @@ def sub_sent(sent, sub_order_dict):
 def decode_sent(sents, sents_dict):
     bad_sents = []
     zh_decode = []
-    for sent, sub_dict in zip(sents, sents_dict):
+    for k, (sent, sub_dict) in enumerate(zip(sents, sents_dict)):
         try:
             if len(sub_dict) > 0:
                 zh_decode.append(sub_sent(sent, sub_dict))
+            else:
+                zh_decode.append(sent)
         except Exception as e:
             bad_sents.append([sent, sub_dict])
             zh_decode.append(sent)
@@ -34,7 +36,6 @@ def decode_sent(sents, sents_dict):
 
 
 if __name__ == '__main__':
-
     file_path = args.file_path
     dict_path = args.dict_path
     to_file_path = args.to_file_path
@@ -49,4 +50,3 @@ if __name__ == '__main__':
 
     with open(to_file_path, "w", encoding="utf8") as f:
         f.writelines(zh_decode)
-
