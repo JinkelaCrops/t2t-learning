@@ -4,6 +4,13 @@ TASK=tmxmall_med
 TMP_DIR=$HOMEPATH/t2t_datagen/$TASK
 FILE_NAME=Tmxmall医学语料_en-US_zh-CN_zh-CN_en-US.txt
 
+# term pool
+python analyzerencode.py -f $TMP_DIR/$FILE_NAME --report 100000
+
+# segment
+python segment.py -f $TMP_DIR/$FILE_NAME.decode.en -l en
+python segment.py -f $TMP_DIR/$FILE_NAME.decode.zh -l zh
+
 # decoder
 PROBLEM=translate_zhen_med
 MODEL=transformer
@@ -13,7 +20,7 @@ DATA_DIR=$HOMEPATH/t2t_data/medicine
 TRAIN_DIR=$HOMEPATH/t2t_train/medicine/$PROBLEM/$MODEL-$HPARAMS
 
 # Decode
-DECODE_FILE=$TMP_DIR/seg.$FILE_NAME.zh
+DECODE_FILE=$TMP_DIR/seg.$FILE_NAME.decode.zh
 OUTPUT_FILE=$TMP_DIR/translation.en
 
 BEAM_SIZE=4
