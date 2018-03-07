@@ -152,21 +152,3 @@ class TranslateZhenNewMedSmallVocab(TranslateZhenNewMed):
     @property
     def targeted_vocab_size(self):
         return 30000
-
-
-@registry.register_problem
-class TranslateZhenNewMedSmallVocabCopy(TranslateZhenNewMed):
-    @property
-    def targeted_vocab_size(self):
-        return 30000
-
-    def __init__(self):
-        super(TranslateZhenNewMedSmallVocabCopy, self).__init__(False, True)
-
-    @property
-    def source_vocab_name(self):
-        return "med.vocab.zhen.copy-zh.%d" % self.targeted_vocab_size
-
-    @property
-    def target_vocab_name(self):
-        return "med.vocab.zhen.copy-en.%d" % self.targeted_vocab_size
