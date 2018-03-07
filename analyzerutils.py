@@ -214,6 +214,8 @@ class SentTokenInfo(object):
             for k, p in enumerate(piece_keys):
                 result_.append(self.filter_pos_dict[piece_keys[k]])
                 result_.append(self.sent[ppp[k + 1][0]:ppp[k + 1][1]])
+            # TODO: how to get the border of words? here we can use " ".join(result_)
+            # any better idea?
             self.result = "".join(result_)
 
             self.sub_order_dict = [(self.filter_pos_dict[pos], self.sent[pos[0]:pos[1]]) for pos in piece_keys]
