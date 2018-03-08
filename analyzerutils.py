@@ -39,7 +39,8 @@ class TokenSubProcess(object):
 
 
 class Token(object):
-    def __init__(self):
+    def __init__(self, verbose=True):
+        self.verbose = verbose
         self.level_map = {}
         self.level_map = self.get_token_level
 
@@ -56,13 +57,15 @@ class Token(object):
                 token = getattr(self, token_name)
                 token_level = token.level
                 self.level_map[token_name] = token_level
-                print(f"Token.get_level_map info: {token_name} has level {token_level}")
+                if self.verbose:
+                    print(f"Token.get_level_map info: {token_name} has level {token_level}")
         return self.level_map
 
     def set_token_level(self, level_map_part):
         for token_name, token_level in level_map_part.items():
             self.level_map[token_name] = token_level
-            print(f"Token.get_level_map info: reset {token_name} 's level to {token_level}")
+            if self.verbose:
+                print(f"Token.get_level_map info: reset {token_name} 's level to {token_level}")
 
     class PercentDecimal(TokenRegexProcess):
         level = 1
@@ -129,13 +132,13 @@ class Token(object):
 class SentTokenInfo(object):
     def __init__(self, sent):
         self.sent = sent
-        self.token_dict = {}
+        # self.token_dict = {}
         self.level_dict = {}
         self.pos_dict = {}
         self.filter_piece = []
         self.filter_pos_dict = {}
         self.result = ""
-        self.sub_order_dict = {}
+        self.sub_order_dict = []
 
     @staticmethod
     def sub_space(targets):
@@ -189,7 +192,7 @@ class SentTokenInfo(object):
                 if pos not in self.level_dict or self.level_dict[pos] < tk.level:
                     self.level_dict[pos] = tk.level
                     self.pos_dict[pos] = tk.rep
-            self.token_dict[tk.rep] = []
+            # self.token_dict[tk.rep] = []
 
         if filter:
             self.filter_piece = self.max_length_subpiece(self.level_dict)
@@ -197,8 +200,8 @@ class SentTokenInfo(object):
             self.filter_piece = self.level_dict.keys()
         for pos in self.filter_piece:
             self.filter_pos_dict[pos] = self.pos_dict[pos]
-            self.token_dict[self.pos_dict[pos]].append(re.sub(" ", "", self.sent[pos[0]:pos[1]]))
-        return self.token_dict, self.filter_pos_dict
+            # self.token_dict[self.pos_dict[pos]].append(re.sub(" ", "", self.sent[pos[0]:pos[1]]))
+        return self.filter_pos_dict  # self.token_dict
 
     @property
     def sub_token(self):
@@ -216,7 +219,7 @@ class SentTokenInfo(object):
                 result_.append(self.sent[ppp[k + 1][0]:ppp[k + 1][1]])
             # TODO: how to get the border of words? here we can use " ".join(result_)
             # any better idea?
-            self.result = "".join(result_)
+            self.result = " ".join(result_)
 
             self.sub_order_dict = [(self.filter_pos_dict[pos], self.sent[pos[0]:pos[1]]) for pos in piece_keys]
             return self.result

@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser(description="segment.py")
 parser.add_argument('-f', "--file_path")
 parser.add_argument('-l', "--language")
 parser.add_argument('-p', "--report", default=10000, type=int)
+parser.add_argument("--to_file_name", default=None)
 parser.add_argument("--zh_seg_tool", default="jieba")
 parser.add_argument("--hanlp_path", default="/media/yanpan/7D4CF1590195F939/Softwares/hanlp")
 parser.add_argument("--hanlp_class_path_sep", default=":")
@@ -134,5 +135,7 @@ if __name__ == '__main__':
     if args.language == "en":
         seg_lines = segment_process(file_path, SegmentNLTK)
 
-    with open(f"{file_father_dir}/seg.{file_name}", "w", encoding="utf8") as f:
+    to_file_name = f"seg.{file_name}" if args.to_file_name is None else args.to_file_name
+
+    with open(f"{file_father_dir}/{to_file_name}", "w", encoding="utf8") as f:
         f.writelines(["%s\n" % line for line in seg_lines])

@@ -73,5 +73,5 @@ if __name__ == '__main__':
     data = line_filter.replace_bad_sep(data, sep)
     print(f"filter info: num of filter lines: {len(data)}")
 
-    with open(f"{file_father_dir}/filter.{file_name}", "w", encoding="utf8") as f:
+    with open(f"{file_path}.filter", "w", encoding="utf8") as f:
         f.writelines(data)

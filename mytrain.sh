@@ -8,9 +8,9 @@ HPARAMS=transformer_base_single_gpu_batch_size_4096
 # MODEL=lstm_seq2seq_attention
 # HPARAMS=lstm_luong_attention_larger_batch_size_2048
 
-TMP_DIR=$HOMEPATH/t2t_datagen/new_medicine
-DATA_DIR=$HOMEPATH/t2t_data/new_medicine
-TRAIN_DIR=$HOMEPATH/t2t_train/new_medicine/$PROBLEM/$MODEL-$HPARAMS
+TMP_DIR=$HOMEPATH/t2t_datagen/med
+DATA_DIR=$HOMEPATH/t2t_data/med
+TRAIN_DIR=$HOMEPATH/t2t_train/med/$PROBLEM/$MODEL-$HPARAMS
 
 mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
 

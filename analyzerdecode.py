@@ -44,7 +44,7 @@ if __name__ == '__main__':
         zh = f.readlines()
 
     with open(dict_path, "r", encoding="utf8") as f:
-        zh_dict = json.load(f)
+        zh_dict = [json.loads(line[-1]) for line in f.readlines()]
 
     zh_decode = decode_sent(zh, zh_dict)
 
