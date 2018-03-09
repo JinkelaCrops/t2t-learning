@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-TASK=tmxmall_med
+TASK=med_test/test/gen
 TMP_DIR=$HOMEPATH/t2t_datagen/$TASK
-FILE_NAME=Tmxmall医学语料_en-US_zh-CN_zh-CN_en-US.txt
+FILE_NAME=test
 
 # unpack if necessary
-python unpack.py -f $TMP_DIR/$FILE_NAME
+#python unpack.py -f $TMP_DIR/$FILE_NAME
 
 # term encode, input: .zh output: .zh.decode .zh.decode.dict
 python analyzerencode.py -f $TMP_DIR/$FILE_NAME.zh --report 100000
@@ -59,15 +59,27 @@ python mybleu.py -rf $TMP_DIR/seg.$FILE_NAME.en.decode \
 # output: encode.seg..decode.en.translation
 python analyzerdecode.py -f $TMP_DIR/seg.$FILE_NAME.en.decode.translation \
                          -d $TMP_DIR/$FILE_NAME.zh.decode.dict \
-                         -t $TMP_DIR/encode.seg.$FILE_NAME.en.decode.translation
+                         -t $TMP_DIR/encode.seg.$FILE_NAME.en.decode.translation \
+                         --dict_type json
 
-# TODO: generate $FILE_NAME.en.translation with a python script: merge.py(unsegment)
-cp $TMP_DIR/encode.seg.$FILE_NAME.en.decode.translation $TMP_DIR/$FILE_NAME.en.translation
+# just segment and cal bleu
+## TODO: generate $FILE_NAME.en.translation with a python script: merge.py(unsegment)
+#cp $TMP_DIR/encode.seg.$FILE_NAME.en.decode.translation $TMP_DIR/$FILE_NAME.en.translation
+#
+## segment to cal bleu
+#python segment.py -f $TMP_DIR/$FILE_NAME.en -l en
+#python segment.py -f $TMP_DIR/$FILE_NAME.en.translation -l en
+#
+#python mybleu.py -rf $TMP_DIR/seg.$FILE_NAME.en.decode \
+#                 -tf $TMP_DIR/seg.$FILE_NAME.en.decode.translation \
+#                 -l en --lower True --truncate 1000
 
-# segment to cal bleu
-python segment.py -f $TMP_DIR/$FILE_NAME.en -l en
-python segment.py -f $TMP_DIR/$FILE_NAME.en.translation -l en
+# encode and cal bleu
+python analyzerdecode.py -f $TMP_DIR/seg.$FILE_NAME.en.decode \
+                         -d $TMP_DIR/$FILE_NAME.en.decode.dict \
+                         -t $TMP_DIR/encode.seg.$FILE_NAME.en.decode \
+                         --dict_type json
 
-python mybleu.py -rf $TMP_DIR/seg.$FILE_NAME.en \
-                 -tf $TMP_DIR/seg.$FILE_NAME.en.translation \
-                 -l en --lower True
+python mybleu.py -rf $TMP_DIR/encode.seg.$FILE_NAME.en.decode \
+                 -tf $TMP_DIR/encode.seg.$FILE_NAME.en.decode.translation \
+                 -l en --lower True --truncate 1000
