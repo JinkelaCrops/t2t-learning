@@ -21,7 +21,7 @@ def trans(src):
     try:
         outcome = json.loads(r.text)
         tgt = outcome["mt_set"][0]["tgt"]
-        print("from:", outcome["mt_set"][0]["provider"])
+        print("from:", outcome["mt_set"][0]["provider"], "content:", tgt[:10], "...")
         return tgt
     except Exception as e:
         print(r.text)
@@ -38,4 +38,4 @@ if __name__ == '__main__':
                 trans_result.append(tgt)
 
     with open(args.file_path + ".fromapi", "w", encoding="utf8") as f:
-        f.writelines([x + "\n" for x in trans_result])
+        f.writelines(["%s\n" % x for x in trans_result])
