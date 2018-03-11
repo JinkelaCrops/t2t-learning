@@ -47,13 +47,13 @@ EOS = text_encoder.EOS_ID
 # This dataset is only a small fraction of full WMT17 task
 _MED_TRAIN_DATASETS = [[
     "new_medicine.tar.gz",
-    ["medicine/train.zh",
-     "medicine/train.en"]]]
+    ["new_medicine/train.zh",
+     "new_medicine/train.en"]]]
 
 _MED_TEST_DATASETS = [[
     "new_medicine.tar.gz",
-    ["medicine/valid.zh",
-     "medicine/valid.en"]]]
+    ["new_medicine/valid.zh",
+     "new_medicine/valid.en"]]]
 
 
 def get_filename(dataset):

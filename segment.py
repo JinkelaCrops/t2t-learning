@@ -2,7 +2,7 @@
 """
 使用nltk和hanlp
 """
-
+import re
 import nltk
 import jieba
 from jpype import *
@@ -112,6 +112,11 @@ def segment_process(file_path, process_class):
     return seg_lines
 
 
+def afterprocess(line):
+    line = re.sub(" +", " ", line).strip()
+    return line
+
+
 if __name__ == '__main__':
     file_path = args.file_path
     file_name = file_path.replace("\\", "/").split("/")[-1]
@@ -138,4 +143,4 @@ if __name__ == '__main__':
     to_file_name = f"seg.{file_name}" if args.to_file_name is None else args.to_file_name
 
     with open(f"{file_father_dir}/{to_file_name}", "w", encoding="utf8") as f:
-        f.writelines(["%s\n" % line for line in seg_lines])
+        f.writelines(["%s\n" % afterprocess(line) for line in seg_lines])
