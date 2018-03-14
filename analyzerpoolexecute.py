@@ -38,7 +38,7 @@ def main(pointer_position):
     t0 = time.time()
     for k, line in enumerate(data):
         try:
-            zh, en, change_order = unpack.unpack(line[:-1])
+            zh, en, change_order = unpack.unpack(line)
         except Exception as e:
             log.error(f"unpack error: {e.__class__}, {e.__context__}, ### {line.strip()}")
             continue
