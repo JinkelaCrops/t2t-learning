@@ -70,6 +70,8 @@ if __name__ == '__main__':
         max_tf_compare_bleu = max(tf_compare_bleu)
         ref_file_bleus.append(max_tf_compare_bleu)
         f.writelines("%s\n" % max_tf_compare_bleu)
+        if k % 10000 == 10000 -1:
+            print("processing %s" % (k+1))
 
     f.close()
     print("potential 95 percent same %s " % (np.sum(np.array(ref_file_bleus) > 0.95) / tf_length))
