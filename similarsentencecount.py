@@ -60,25 +60,24 @@ if __name__ == '__main__':
 
     decode = Decode(args.lower, args.truncate)
     func = decode.zh_decode if language == "zh" else decode.en_decode
-    ref_file_bleus = []
+    file_bleus = []
     with open(tgt_path, "r", encoding="utf8") as ff:
         tf_length = len(ff.readlines())
 
-    f = open(args.ref_file_path + ".compare_bleu", "w", encoding="utf8")
-    for k, rf_line in enumerate(func(ref_path)):
-        tf_compare_bleu = [sentence_bleu([rf_line], tf_line) for tf_line in func(tgt_path)]
+    f = open(args.tgt_file_path + ".compare_bleu", "w", encoding="utf8")
+    for k, tf_line in enumerate(func(tgt_path)):
+        tf_compare_bleu = [sentence_bleu([rf_line], tf_line) for rf_line in func(ref_path)]
         max_tf_compare_bleu = max(tf_compare_bleu)
-        ref_file_bleus.append(max_tf_compare_bleu)
+        file_bleus.append(max_tf_compare_bleu)
         f.writelines("%s\n" % max_tf_compare_bleu)
-        if k % 10000 == 10000 -1:
-            print("processing %s" % (k+1))
+        print("processing %s" % (k+1))
 
     f.close()
-    print("potential 95 percent same %s " % (np.sum(np.array(ref_file_bleus) > 0.95) / tf_length))
-    print("potential 90 percent same %s " % (np.sum(np.array(ref_file_bleus) > 0.90) / tf_length))
-    print("potential 80 percent same %s " % (np.sum(np.array(ref_file_bleus) > 0.80) / tf_length))
-    print("potential 70 percent same %s " % (np.sum(np.array(ref_file_bleus) > 0.70) / tf_length))
-    print("potential 60 percent same %s " % (np.sum(np.array(ref_file_bleus) > 0.60) / tf_length))
+    print("potential 95 percent same %s " % (np.sum(np.array(file_bleus) > 0.95) / tf_length))
+    print("potential 90 percent same %s " % (np.sum(np.array(file_bleus) > 0.90) / tf_length))
+    print("potential 80 percent same %s " % (np.sum(np.array(file_bleus) > 0.80) / tf_length))
+    print("potential 70 percent same %s " % (np.sum(np.array(file_bleus) > 0.70) / tf_length))
+    print("potential 60 percent same %s " % (np.sum(np.array(file_bleus) > 0.60) / tf_length))
 
 # 0.17842, translate_enzh_wmt8k, transformer, transformer_base_single_gpu
 # 0.09039, translate_enzh_wmt8k, lstm_seq2seq_attention, lstm_luong_attention_multi
