@@ -20,10 +20,10 @@ python segment.py -f $TMP_DIR/$FILE_NAME.zh.decode -l zh
 # ==============================================
 PROBLEM=translate_zhen_new_med_small_vocab
 MODEL=transformer
-HPARAMS=transformer_big_single_gpu_batch_size_1024
+HPARAMS=transformer_big_single_gpu_batch_size
 
-DATA_DIR=$HOMEPATH/t2t_data/new_medicine                                    # vocab
-TRAIN_DIR=$HOMEPATH/t2t_train/new_medicine/$PROBLEM/$MODEL-$HPARAMS         # train model
+DATA_DIR=$HOMEPATH/t2t_data/new_medicine_all                                    # vocab
+TRAIN_DIR=$HOMEPATH/t2t_train/new_medicine_all/$PROBLEM/$MODEL-$HPARAMS         # train model
 
 # Decode
 DECODE_FILE=$TMP_DIR/seg.$FILE_NAME.zh.decode

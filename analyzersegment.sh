@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-TMP_DIR=$HOMEPATH/t2t_datagen/med_test/test
-FILE_NAME=test.t2t_transformer_bpe
+TMP_DIR=$HOMEPATH/t2t_datagen/med_test/test_new
+FILE_NAME=test.google
 
 # term process
 python analyzerencode.py -f $TMP_DIR/$FILE_NAME --report 100000

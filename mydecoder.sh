@@ -13,7 +13,7 @@ TRAIN_DIR=$HOMEPATH/t2t_train/new_medicine/$PROBLEM/$MODEL-$HPARAMS
 # Decode
 #DECODE_FILE=$TMP_DIR/med_zhen_30000k_tok_dev.lang1
 DECODE_FILE=$HOMEPATH/t2t_datagen/med_test/valid2/seg.valid2.zh.decode
-OUTPUT_FILE=$TRAIN_DIR/valid2.t2t_transformer_big_bpe.new
+OUTPUT_FILE=$TRAIN_DIR/valid2.t2t_transformer_big_bpe.new.40k
 
 BEAM_SIZE=4
 ALPHA=0.6
