@@ -42,11 +42,19 @@ def interval_expr_to_unicode(input_intervals):
         if input_interval == "":
             continue
         if "-" in input_interval and "\\u" in input_interval:
-            pass
-        elif "-" in input_interval:
-            pass
+            interval_tmp = input_interval.split("-")
+            interval_tmp = [unicode_to_num(interval_tmp[0]), unicode_to_num(interval_tmp[1])]
+            output_intervals.append(interval_tmp)
+        elif len(input_interval) == 3 and input_interval[1:2] == "-":
+            interval_tmp = input_interval.split("-")
+            interval_tmp = [char_to_num(interval_tmp[0]), char_to_num(interval_tmp[1])]
+            output_intervals.append(interval_tmp)
         elif "\\u" in input_interval:
-            pass
+            for c in input_interval.split("\\u"):
+                if c == "":
+                    continue
+                ci = [int(c, 16), int(c, 16)]
+                output_intervals.append(ci)
         else:
             for c in input_interval:
                 ci = [char_to_num(c), char_to_num(c)]
