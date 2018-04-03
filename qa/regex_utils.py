@@ -1,11 +1,12 @@
 def interval_merge(intervals, surplus=1):
     # input intervals, output merged intervals
+    # [[1,5], [1,2], [3,3], [1,1], [2,6], [8,10], [11,12]] -> [1,6] [8,10] [11,12]
     output_intervals = []
     sorted_intervals = sorted(intervals)
     i = 0
     sn = sorted_intervals[0]
-    while i < len(sorted_intervals):
-        s1 = sorted_intervals[i]
+    while i < len(sorted_intervals) - 1:
+        s1 = sorted_intervals[i+1]
         if s1[1] <= sn[1]:
             i += 1
         elif s1[0] <= sn[1] + surplus:
