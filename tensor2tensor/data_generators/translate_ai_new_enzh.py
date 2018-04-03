@@ -47,13 +47,13 @@ EOS = text_encoder.EOS_ID
 # This dataset is only a small fraction of full WMT17 task
 _MED_TRAIN_DATASETS = [[
     "new_medicine.tar.gz",
-    ["new_medicine/train.zh",
-     "new_medicine/train.en"]]]
+    ["new_medicine/train.en",
+     "new_medicine/train.zh"]]]
 
 _MED_TEST_DATASETS = [[
     "new_medicine.tar.gz",
-    ["new_medicine/valid.zh",
-     "new_medicine/valid.en"]]]
+    ["new_medicine/valid.en",
+     "new_medicine/valid.zh"]]]
 
 
 def get_filename(dataset):
@@ -61,7 +61,7 @@ def get_filename(dataset):
 
 
 @registry.register_problem
-class TranslateZhenNewMed(translate.TranslateProblem):
+class TranslateEnzhNewMed(translate.TranslateProblem):
     """Problem spec for WMT En-Zh translation.
     Attempts to use full training dataset, which needs website
     registration and downloaded manually from official sources:
@@ -86,11 +86,11 @@ class TranslateZhenNewMed(translate.TranslateProblem):
 
     @property
     def source_vocab_name(self):
-        return "med.vocab.zhen-zh.%d" % self.targeted_vocab_size
+        return "med.vocab.enzh-en.%d" % self.targeted_vocab_size
 
     @property
     def target_vocab_name(self):
-        return "med.vocab.zhen-en.%d" % self.targeted_vocab_size
+        return "med.vocab.enzh-zh.%d" % self.targeted_vocab_size
 
     def get_training_dataset(self, tmp_dir):
         """UN Parallel Corpus and CWMT Corpus need to be downloaded manually.
@@ -115,7 +115,7 @@ class TranslateZhenNewMed(translate.TranslateProblem):
             data_dir, tmp_dir, self.target_vocab_name, self.targeted_vocab_size,
             target_datasets, file_byte_budget=1e8)
         tag = "train" if train else "dev"
-        filename_base = "med_zhen_%sk_tok_%s" % (self.targeted_vocab_size, tag)
+        filename_base = "med_enzh_%sk_tok_%s" % (self.targeted_vocab_size, tag)
         data_path = translate.compile_data(tmp_dir, datasets, filename_base)
         return translate.bi_vocabs_token_generator(data_path + ".lang1",
                                                    data_path + ".lang2",
@@ -141,20 +141,21 @@ class TranslateZhenNewMed(translate.TranslateProblem):
 
 
 @registry.register_problem
-class TranslateZhenNewMedSimple(TranslateZhenNewMed):
+class TranslateEnzhNewMedSimple(TranslateEnzhNewMed):
     @property
     def targeted_vocab_size(self):
         return 8000
 
 
 @registry.register_problem
-class TranslateZhenNewMedSmallVocab(TranslateZhenNewMed):
+class TranslateEnzhNewMedSmallVocab(TranslateEnzhNewMed):
     @property
     def targeted_vocab_size(self):
         return 30000
 
+
 @registry.register_problem
-class TranslateZhenNewMedBigVocab(TranslateZhenNewMed):
+class TranslateEnzhNewMedBigVocab(TranslateEnzhNewMed):
     @property
     def targeted_vocab_size(self):
         return 60000
