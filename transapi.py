@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 class TranslateAPI(object):
     url_text = lambda \
-            text: f"http://qa.tmxmall.com/v1/http/mttranslate?text={text}&user_name=1499059470@qq.com&client_id=e0c2ccfde21c5de10af7a72e53bcc273&from=zh-CN&to=en-US&de=trados"
+            text: f"http://qa.tmxmall.com/v1/http/mttranslate?text={text}&user_name=1499059470@qq.com&client_id=e0c2ccfde21c5de10af7a72e53bcc273&from=en-US&to=zh-CN&de=trados"
 
 
 def trans(src):
