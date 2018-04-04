@@ -20,7 +20,7 @@ unknown_char = "[^\\u0020-\\u007e\\u4e00-\\u9fff]"
 
 def regex_filter_line(regex, lines):
     filter_sentence = list(filter(lambda x: re.search(regex, x) is not None, lines))
-    print("%30s" % regex, len(filter_sentence))
+    print("%20s" % regex, len(filter_sentence))
     return len(filter_sentence)
 
 
