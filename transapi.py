@@ -36,6 +36,8 @@ if __name__ == '__main__':
             if k < args.truncate:
                 tgt = trans(line[:-1])
                 trans_result.append(tgt)
+            if k % 100 == 100 - 1:
+                print(k)
 
     with open(args.file_path + ".fromapi", "w", encoding="utf8") as f:
         f.writelines(["%s\n" % x for x in trans_result])
