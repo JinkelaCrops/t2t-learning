@@ -97,9 +97,9 @@ def decode(estimator, hparams, decode_hp):
 
 def main(_):
     HOMEPATH = "D:/Projects/t2t_med"
-    TASK = "med_test/cpu/gen"
-    FILE_NAME = "test.small"
-    TMP_DIR = f"{HOMEPATH}/t2t_test/{TASK}"
+    # TASK = "med_test/cpu/gen"
+    # FILE_NAME = "test.small"
+    # TMP_DIR = f"{HOMEPATH}/t2t_test/{TASK}"
 
     FLAGS.data_dir = f"{HOMEPATH}/t2t_data/new_medicine_new"
     FLAGS.problems = "translate_zhen_new_med_small_vocab"
@@ -107,9 +107,9 @@ def main(_):
     FLAGS.hparams_set = "transformer_big_single_gpu_batch_size"
     FLAGS.output_dir = f"{HOMEPATH}/t2t_train/new_medicine_new/{FLAGS.problems}/{FLAGS.model}-{FLAGS.hparams_set}"
     FLAGS.decode_hparams = "beam_size=4,alpha=0.6"
-    FLAGS.decode_from_file = f"{TMP_DIR}/seg.{FILE_NAME}.zh.decode"
-    FLAGS.decode_to_file = f"{TMP_DIR}/seg.{FILE_NAME}.en.decode.translation"
-    # FLAGS.decode_interactive = True
+    # FLAGS.decode_from_file = f"{TMP_DIR}/seg.{FILE_NAME}.zh.decode"
+    # FLAGS.decode_to_file = f"{TMP_DIR}/seg.{FILE_NAME}.en.decode.translation"
+    FLAGS.decode_interactive = True
 
     tf.logging.set_verbosity(tf.logging.INFO)
     usr_dir.import_usr_dir(FLAGS.t2t_usr_dir)
@@ -126,6 +126,68 @@ def main(_):
         use_tpu=False)
 
     # decode(estimator, hp, decode_hp)
+    ##############################################################
+    from tensor2tensor.utils.decoding import _interactive_input_tensor_to_features_dict
+    from tensor2tensor.utils.decoding import _interactive_input_fn
+    from tensor2tensor.utils.decoding import make_input_fn_from_generator
+    ##############################################################
+    hparams = hp
+
+    def input_fn():
+        gen_fn = make_input_fn_from_generator(_interactive_input_fn(hparams))
+        example = gen_fn()
+        example = _interactive_input_tensor_to_features_dict(example, hparams)
+        return example
+
+    result_iter = estimator.predict(input_fn)
+    for result in result_iter:
+        problem_idx = result["problem_choice"]
+        is_image = False  # TODO(lukaszkaiser): find out from problem id / class.
+        targets_vocab = hparams.problems[problem_idx].vocabulary["targets"]
+
+        if decode_hp.return_beams:
+            beams = np.split(result["outputs"], decode_hp.beam_size, axis=0)
+            scores = None
+            if "scores" in result:
+                scores = np.split(result["scores"], decode_hp.beam_size, axis=0)
+            for k, beam in enumerate(beams):
+                tf.logging.info("BEAM %d:" % k)
+                beam_string = targets_vocab.decode(_save_until_eos(beam, is_image))
+                if scores is not None:
+                    tf.logging.info("\"%s\"\tScore:%f" % (beam_string, scores[k]))
+                else:
+                    tf.logging.info("\"%s\"" % beam_string)
+        else:
+            if decode_hp.identity_output:
+                tf.logging.info(" ".join(map(str, result["outputs"].flatten())))
+            else:
+                tf.logging.info(
+                    targets_vocab.decode(_save_until_eos(result["outputs"], is_image)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ###################################################################################
     from tensor2tensor.utils.decoding import _get_sorted_inputs
     from tensor2tensor.utils.decoding import _decode_batch_input_fn
@@ -188,6 +250,25 @@ def main(_):
     # estimator._create_and_assert_global_step(g)
     features, input_hooks = estimator._get_features_from_input_fn(
         input_fn, model_fn_lib.ModeKeys.PREDICT)
+
+    def _get_features_from_input_fn(input_fn, mode):
+        """Extracts the `features` from return values of `input_fn`."""
+        result = self._call_input_fn(input_fn, mode)
+        input_hooks = []
+        if isinstance(result, dataset_ops.Dataset):
+            iterator = result.make_initializable_iterator()
+            input_hooks.append(_DatasetInitializerHook(iterator))
+            result = iterator.get_next()
+        if isinstance(result, (list, tuple)):
+            # Unconditionally drop the label (the second element of result).
+            result = result[0]
+
+        if not _has_dataset_or_queue_runner(result):
+            logging.warning('Input graph does not use tf.data.Dataset or contain a '
+                            'QueueRunner. That means predict yields forever. '
+                            'This is probably a mistake.')
+        return result, input_hooks
+
 
     estimator_spec = estimator._call_model_fn(
         features, None, model_fn_lib.ModeKeys.PREDICT, estimator.config)

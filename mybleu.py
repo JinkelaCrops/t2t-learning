@@ -20,7 +20,7 @@ class Decode(object):
 
     @staticmethod
     def zh_separator(zh):
-        return re.sub(" +", " ", re.sub("", " ", zh)).strip()
+        return re.sub(" +", " ", re.sub("(?<=[\\u4e00-\\u9fff])(?=[\\u4e00-\\u9fff])", " ", zh)).strip()
 
     @staticmethod
     def en_separator(en):
