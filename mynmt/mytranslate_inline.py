@@ -15,13 +15,15 @@
 # python segmtgtt.py -f $TMP_DIR/$FILE_NAME.tgt.encode -l tgt
 # python segmtgtt.py -f $TMP_DIR/$FILE_NAME.src.encode -l src
 
-from textfilterutils import Unpack
-from textfilterutils import AfterProcess
 from analyzeutils import Token
 from analyzeutils import SentTokenInfo
+from analyzeutils import segment_afterprocess
 from analyzeutils import sub_sent
+from analyzeutils import translate_afterprocess
 from segmentutils import SegmentJieba
 from segmentutils import SegmentNLTK
+# from tensor2tensor.bin import t2t_decoder
+import re
 import argparse
 
 parser = argparse.ArgumentParser(description="mytranslate_inline.py")
@@ -32,9 +34,9 @@ parser.add_argument("--tgt_lan", default="lan2")
 parser.add_argument("--report", default=10000, type=int)
 
 args = parser.parse_args(
-    ["--file_path", "/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449/t2t_med/mynmt/data/test/test.zh",
-     "--src_lan", "zh",
-     "--tgt_lan", "en"])
+    ["--file_path", "../test/test.en",
+     "--src_lan", "en",
+     "--tgt_lan", "zh"])
 
 src_lan = args.src_lan
 tgt_lan = args.tgt_lan
@@ -45,46 +47,68 @@ file_dir = "/".join(file_path.replace("\\", "/").split("/")[:-1])
 segment_dict = {"en": SegmentNLTK, "zh": SegmentJieba}
 target_file_name = file_name + "." + tgt_lan + ".translate"
 
+tokens = Token()
+trans_after_regex = "(" + "|".join(tokens.get_token_name) + ")"
 
-def translate_one(x0, x1):
-    return x1
+
+class Field(object):
+    def __init__(self, src, src_lan):
+        self.src = src
+        self.src_lan = src_lan
+        self.src_encode = ""
+        self.src_encode_dict = []
+        self.src_encode_seg = ""
+        self.trans_after_regex = ""
+        self.tgt_encode_seg_translate = ""
+        self.tgt_encode_seg_translate_decode = ""
+        self.trans = ""
+
+    def backup_decode(self):
+        if self.trans_after_regex:
+            self.tgt_encode_seg_translate_decode = re.sub(self.trans_after_regex, "", self.tgt_encode_seg_translate)
+        else:
+            self.tgt_encode_seg_translate_decode = self.tgt_encode_seg_translate
 
 
-def translate_afterprocess(line):
-    return line
+def translate_one(field: Field):
+    field.tgt_encode_seg_translate = field.src_encode_seg
+
+
+def before_translate(field: Field):
+    # unpack
+    src = field.src.strip()
+
+    # analyze
+    field.trans_after_regex = trans_after_regex
+    src_lk = SentTokenInfo(src)
+    src_lk.execute_token(tokens)
+    field.src_encode = src_lk.sub_token
+    field.src_encode_dict = src_lk.sub_order_dict
+
+    # segment
+    src_process_class = segment_dict[field.src_lan]
+    src_encode_seg = src_process_class.process(field.src_encode)
+    field.src_encode_seg = segment_afterprocess(" ".join(src_encode_seg))
+
+
+def after_translate(field: Field):
+    # translate decode
+    try:
+        field.tgt_encode_seg_translate_decode = sub_sent(field.tgt_encode_seg_translate, field.src_encode_dict)
+    except Exception as e:
+        print(f"translate decode error: {e.__class__}, {e.__context__}, ### {line.strip()}")
+        field.backup_decode()
+
+    # translate afterprocess
+    field.trans = translate_afterprocess(field.tgt_encode_seg_translate_decode)
 
 
 def decode_inline(line):
-    # unpack
-    src = line.strip()
-
-    # analyze
-    tokens = Token()
-    src_lk = SentTokenInfo(src)
-    src_lk.execute_token(tokens)
-    src_encode = src_lk.sub_token
-    src_encode_dict = src_lk.sub_order_dict
-
-    # segment
-    seg_afterprocess_class = AfterProcess
-    src_process_class = segment_dict[src_lan]
-    src_encode_seg = src_process_class.process(src_encode)
-    src_encode_seg = seg_afterprocess_class.afterprocess(" ".join(src_encode_seg))
-
-    # translate
-    tgt_encode_seg_translate = translate_one(src_encode_seg, "a a a a")  # TODO: here is wrong, no tgt_encode_seg
-
-    # translate decode
-    try:
-        tgt_encode_seg_translate_decode = sub_sent(tgt_encode_seg_translate, src_encode_dict)
-    except Exception as e:
-        print(f"translate decode error: {e.__class__}, {e.__context__}, ### {line.strip()}")
-        return None
-
-    # translate afterprocess
-    trans = translate_afterprocess(tgt_encode_seg_translate_decode)
-
-    return src, trans
+    field = Field(line, src_lan)
+    before_translate(field)
+    translate_one(field)
+    after_translate(field)
+    return field.src, field.trans
 
 
 if __name__ == '__main__':
@@ -96,7 +120,7 @@ if __name__ == '__main__':
         src, tgt_trans = decode_inline(line)
         output.append(tgt_trans)
         if k % args.report == args.report - 1:
-            print(f"execute {f_name} sentence No.{k+1}")
+            print(f"execute {file_name} sentence No.{k+1}")
 
     with open(file_dir + "/" + target_file_name, "w", encoding="utf8") as f:
         f.writelines([x + "\n" for x in output])

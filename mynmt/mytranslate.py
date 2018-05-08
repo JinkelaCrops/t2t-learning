@@ -15,11 +15,11 @@
 # python segmtgtt.py -f $TMP_DIR/$FILE_NAME.tgt.encode -l tgt
 # python segmtgtt.py -f $TMP_DIR/$FILE_NAME.src.encode -l src
 
-from textfilterutils import Unpack
-from textfilterutils import AfterProcess
 from analyzeutils import Token
 from analyzeutils import SentTokenInfo
+from analyzeutils import segment_afterprocess
 from analyzeutils import decode_sent
+from analyzeutils import decode_afterprocess
 from segmentutils import SegmentJieba
 from segmentutils import SegmentNLTK
 import shutil
@@ -36,13 +36,12 @@ parser.add_argument("--report", default=10000, type=int)
 parser.add_argument("--cover", default=False, type=bool)
 
 args = parser.parse_args(
-    ["--file_path", "/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449/t2t_med/mynmt/data/test/test",
+    ["--file_path", "../test/test.zh",
      "--src_lan", "zh",
      "--tgt_lan", "en",
-     "--separator", " ||| "])
+     "--cover", "True"])
 
 if_cover = args.cover
-sep = args.separator
 file_path = args.file_path
 file_name = file_path.replace("\\", "/").split("/")[-1]
 file_dir = "/".join(file_path.replace("\\", "/").split("/")[:-1])
@@ -95,7 +94,6 @@ def file_segment():
     f_name, f_seg_name, lan = src_file_encode_name, src_file_encode_seg_name, args.src_lan
     seg_lines = []
     process_class = segment_dict[lan]
-    seg_afterprocess_class = AfterProcess
     with open(file_dir + "/" + f_name, "r", encoding="utf8") as f:
         for k, line in enumerate(f):
             seg_line = process_class.process(line.strip())
@@ -104,7 +102,7 @@ def file_segment():
                 print(f"segment info: {f_name} segment step {k+1}")
 
     with open(file_dir + "/" + f_seg_name, "w", encoding="utf8") as f:
-        f.writelines([seg_afterprocess_class.afterprocess(line) + "\n" for line in seg_lines])
+        f.writelines([segment_afterprocess(line) + "\n" for line in seg_lines])
     return 0
 
 
@@ -125,13 +123,10 @@ def translate_decode():
         src_dict = json.load(f)
 
     trans_decode_sentences = decode_sent(trans, src_dict)
+    trans_decode_sentences = decode_afterprocess(trans_decode_sentences)
 
     with open(file_dir + "/" + target_name, "w", encoding="utf8") as f:
         f.writelines(trans_decode_sentences)
-
-
-def translate_afterprocess():
-    return 0
 
 
 if __name__ == '__main__':
@@ -144,4 +139,3 @@ if __name__ == '__main__':
 
     # after translate
     translate_decode()
-    translate_afterprocess()

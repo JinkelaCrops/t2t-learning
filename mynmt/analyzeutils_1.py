@@ -1,68 +1,7 @@
 import re
-
-
-def pattern_find_all(regex, sent, group=0):
-    output = []
-    for x in re.finditer(regex, sent):
-        output.append(x.group(group))
-    return output
-
-
-def _flatten_region_to_region(flatten_region, strip=True):
-    if strip:
-        if len(flatten_region) > 0 and flatten_region[0] == flatten_region[1]:
-            flatten_region = flatten_region[2:]
-        if len(flatten_region) > 0 and flatten_region[-1] == flatten_region[-2]:
-            flatten_region = flatten_region[:-2]
-    if len(flatten_region) % 2 > 0:
-        flatten_region.pop(-1)
-    region = []
-    for i in range(len(flatten_region) // 2):
-        region.append(flatten_region[2 * i: 2 * i + 2])
-    return region
-
-
-def gen_unmasked_region(mask: list):
-    mask_region_tmp = [0]
-    continue_flag = False
-    for k, current_state in enumerate(mask):
-        if continue_flag ^ current_state:
-            continue_flag = not continue_flag
-            mask_region_tmp.append(k)
-    mask_region_tmp.append(len(mask))
-    mask_region = _flatten_region_to_region(mask_region_tmp)
-    return mask_region
-
-
-def mask_update(mask, pts: dict):
-    if not pts:
-        return
-    for i, pti in pts.items():
-        for j in pti:
-            for k in range(j[0], j[1]):
-                mask[k] = 1
-
-
-def pattern_sub_pts(regex, sent, flags=0, group=0, mask=None) -> str:
-    return " ".join(output_list)
-
-
-def pattern_find_pts(regex, sent, flags=0, group=0, mask=None) -> dict:
-    if "(?=" in regex or "(?!" in regex:
-        raise Exception("do not support look ahead, for finditer will block all str behind endpos")
-    mask = [0] * len(sent) if mask is None else mask
-    unmasked_region = gen_unmasked_region(mask)
-    output = {}
-    p = re.compile(regex, flags=flags)
-    for region in unmasked_region:
-        for x in p.finditer(sent, region[0], region[1]):
-            position = [x.start(), x.end()]
-            pattern = x.group(group)
-            if pattern in output:
-                output[pattern].append(position)
-            else:
-                output[pattern] = [position]
-    return output
+from regexutils import pattern_sub_pts
+from regexutils import pattern_find_pts
+from regexutils import mask_update
 
 
 class Field(object):
@@ -119,7 +58,8 @@ class Modify(object):
             output = pattern_find_pts(self.regex, field.line, flags=re.A.value, mask=field.mask)
             mask_update(field.mask, output)
             # sub with self.desc
-            region_tmp = [0] + [k for i, pti in output.items() for j in pti for k in j] + [len(field.line)]
+            region_tmp = [k for j in sorted([j for i, pti in output.items() for j in pti]) for k in j]
+            region_tmp = [0] + region_tmp + [len(field.line)]
             region = _flatten_region_to_region(region_tmp, strip=False)
             output_list = []
             for k, region_k in enumerate(region):
@@ -134,22 +74,18 @@ class Modify(object):
         def __init__(self):
             super().__init__()
             self.desc = "TTTUpperChemical"
-            self.regex = "\\b[A-Z][A-Z0-9_]+\\b"
-            assert re.search(self.regex, "ewe 6 0. 9 0%单位")
+            self.regex = "\\b[0-9]*(?:[a-z]*(?:[A-Z]+[a-z]*)+[0-9]+)+[A-Za-z]*\\b|" \
+                         "\\b[A-Za-z]*(?:[0-9]+[a-z]*(?:[A-Z]+[a-z]*)+)+[0-9]*\\b"
+            assert re.search(self.regex, "ewe DIsH77st单位", re.A)
 
-    class ComplicateChemical(Numeric):
-        def __init__(self):
-            super().__init__()
-            self.desc = "TTTComplicateChemical"
-            # TODO:
-            self.regex = "\\b[A-Z][A-Z0-9_]+\\b"
-            assert re.fullmatch(self.regex, "4(3H)-oxo-5,6,7,8-tetrahydropyrido-[2,3-d]")
+    # TODO: "2-[(4-methyl-2-nitrophenyl)diazenyl]-3-oxo-N-phenyl-butanamide(MNPDOPBA)"
 
 
 field = Field("http://www.baidu.666.com H1E2 6 0. 9 0%单位988")
 Modify.Link().process(field)
 Modify.Email().process(field)
 Modify.Numeric().process(field)
+Modify.UpperChemical().process(field)
 
 
 class Filter:
@@ -159,7 +95,7 @@ class Filter:
 class RePattern(object):
     @staticmethod
     def regex_between_enzh(regex):
-        return f"\\b{regex}(?=[\u4e00-\u9fff]|\\b)|(?<=[\u4e00-\u9fff]){regex}(?=[\u4e00-\u9fff]|\\b)"
+        return f"\\b{regex}(?=[\\u4e00-\\u9fff]|\\b)|(?<=[\\u4e00-\\u9fff]){regex}(?=[\\u4e00-\\u9fff]|\\b)"
 
 
 class TokenRegexProcess(object):
@@ -185,7 +121,7 @@ class TokenRegexProcess(object):
 class TokenSubProcess(object):
     level = 1
     sub_dict = {" ": " "}
-    rep = "\u0000"
+    rep = "\\u0000"
 
     @classmethod
     def process(cls, sent):
@@ -236,11 +172,11 @@ class Token(object):
         assert re.search("^" + regex + "$", "dasd@dasds.edu") is not None
 
     class PercentNumeric(TokenRegexProcess):
-        regex = "(?<=[\u4000-\u9fff ])[0-9][0-9 ]*(\.[0-9 ]*[0-9]+)? *[%‰‱]?(?=[\u4000-\u9fff ])"
+        regex = "(?<=[\\u4000-\\u9fff ])[0-9][0-9 ]*(\.[0-9 ]*[0-9]+)? *[%‰‱]?(?=[\\u4000-\\u9fff ])"
         assert re.search(regex, "ewe 6 0. 9 0%单位")
 
     class Numeric(TokenRegexProcess):
-        regex = "(?<=[\u4000-\u9fff ])[0-9][0-9 ]*(\.[0-9 ]*[0-9]+)?(?=[\u4000-\u9fff ])"
+        regex = "(?<=[\\u4000-\\u9fff ])[0-9][0-9 ]*(\.[0-9 ]*[0-9]+)?(?=[\\u4000-\\u9fff ])"
         assert re.search(regex, "ewe 6 0. 9 0单位")
 
     class PercentInteger(TokenRegexProcess):
@@ -289,7 +225,7 @@ class Token(object):
     class TermChemicalPrefix(TokenRegexProcess):
         level = 0.3
         """1,3,7-"""
-        regex = "(?<![\w\-])([0-9]+ *[,，] *)*[0-9]+\-(?=[A-Za-z\u4e00-\u9fff])"
+        regex = "(?<![\w\-])([0-9]+ *[,，] *)*[0-9]+\-(?=[A-Za-z\\u4e00-\\u9fff])"
         rep = "TermChemicalPrefix"
 
     class RomanNum(TokenSubProcess):

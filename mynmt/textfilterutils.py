@@ -80,8 +80,4 @@ class Unpack(Base):
         return zh, en, change_order
 
 
-class AfterProcess(Base):
-    @staticmethod
-    def afterprocess(line):
-        line = re.sub(" +", " ", line).strip()
-        return line
+

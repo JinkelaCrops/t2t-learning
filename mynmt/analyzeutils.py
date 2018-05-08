@@ -1,16 +1,19 @@
 import re
+from regexutils import pattern_sub_pts
+from regexutils import pattern_find_pts
+from regexutils import mask_update
 
 
 class RePattern(object):
     @staticmethod
     def regex_between_enzh(regex):
-        return f"\\b{regex}(?=[\u4e00-\u9fff]|\\b)|(?<=[\u4e00-\u9fff]){regex}(?=[\u4e00-\u9fff]|\\b)"
+        return f"\\b{regex}(?=[\\u4e00-\\u9fff]|\\b)|(?<=[\\u4e00-\\u9fff]){regex}(?=[\\u4e00-\\u9fff]|\\b)"
 
 
 class TokenRegexProcess(object):
     level = 1
     regex = " "
-    rep = "\uf000"
+    rep = "\\uf000"
 
     @classmethod
     def process(cls, sent):
@@ -25,7 +28,7 @@ class TokenRegexProcess(object):
 class TokenSubProcess(object):
     level = 1
     sub_dict = {" ": " "}
-    rep = "\uf000"
+    rep = "\\uf000"
 
     @classmethod
     def process(cls, sent):
@@ -112,14 +115,14 @@ class Token(object):
     class TermEnCharWithNum(TokenRegexProcess):
         level = 0.3
         """EP2"""
-        regex = RePattern.regex_between_enzh("[0-9]+[A-Za-z]+[0-9A-Za-z]*") + "|" + RePattern.regex_between_enzh(
-            "[0-9A-Za-z]*[A-Za-z]+[0-9]+")
+        regex = RePattern.regex_between_enzh("[0-9]*(?:[a-z]*[A-Z]+[a-z]*[0-9]+)+[A-Za-z]*") + "|" + \
+                RePattern.regex_between_enzh("[A-Za-z]*(?:[0-9]+[a-z]*[A-Z]+[a-z]*)+[0-9]*")
         rep = "TermEnCharWithNum"
 
     class TermChemicalPrefix(TokenRegexProcess):
         level = 0.3
         """1,3,7-"""
-        regex = "(?<![\w\-])([0-9]+ *[,，] *)*[0-9]+\-(?=[A-Za-z\u4e00-\u9fff])"
+        regex = "(?<![\w\-])([0-9]+ *[,，] *)*[0-9]+\-(?=[A-Za-z\\u4e00-\\u9fff])"
         rep = "TermChemicalPrefix"
 
     class RomanNum(TokenSubProcess):
@@ -221,8 +224,14 @@ class SentTokenInfo(object):
             # any better idea?
             self.result = " ".join(result_)
 
-            self.sub_order_dict = [(self.filter_pos_dict[pos], self.sent[pos[0]:pos[1]]) for pos in piece_keys]
+            self.sub_order_dict = [(self.filter_pos_dict[pos], self.sent[pos[0]:pos[1]].replace(" ", "")) for pos in
+                                   piece_keys]
             return self.result
+
+
+def segment_afterprocess(line):
+    line = re.sub(" +", " ", line).strip()
+    return line
 
 
 def sub_sent(sent, sub_order_dict):
@@ -247,3 +256,36 @@ def decode_sent(sents, sents_dict):
     if len(bad_sents) > 0:
         print("decode_sent: warning: bad_sent!")
     return decode
+
+
+def translate_afterprocess(line):
+    line = re.sub(" +([,.?!:;'’”})\\]、，。？！：；）】》])", "\\1", line)
+    line = re.sub("([,.?!:;'’”})\\]] |[、，。？！：；）】》]) +", "\\1", line)
+    line = re.sub("([‘“{(\\[（【《]) +", "\\1", line)
+    line = re.sub(" +( [‘“{(\\[]|[（【《])", "\\1", line)
+
+    mask = [0] * len(line)
+    # \\b[A-Z]\\. [a-z]+\\b froom corpus
+    case_store = ["e. g.", "i. e.", "E. coli", "S. aureus", "O. aureus", "C. indicum", "C. funicola", "M. pusillum"]
+    case_regex = "|".join([re.escape(c) for c in case_store])
+    case_mask = pattern_find_pts(case_regex, line, mask=mask)
+    mask_update(mask, case_mask)
+
+    def upper_after_endmark(m):
+        pattern = m.group(0)
+        if len(pattern) == 1 and pattern.islower():
+            return pattern.upper()
+        else:
+            return pattern
+
+    line = pattern_sub_pts("(?<=[.?!;] )[a-z]|(?<=[。？！；])[a-z]|(?<=^)[a-z]", upper_after_endmark, line, mask=mask)
+    line = re.sub("(?<=[\\u4e00-\\u9fff]) +(?=[\\u4e00-\\u9fff])|"
+                  "(?<=[\\u4e00-\\u9fff]) +(?=\\w)|"
+                  "(?<=[\\w]) +(?=[\\u4e00-\\u9fff])", "", line)
+    line = re.sub(" *([+±=*/<>≤≥_~′″]) *", "\\1", line)
+    line = re.sub("(?<!,) *\\- *", "-", line)
+    return line
+
+
+def decode_afterprocess(sents):
+    return [translate_afterprocess(sent) for sent in sents]
