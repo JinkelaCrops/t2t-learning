@@ -56,7 +56,7 @@ def main(_):
     FLAGS.model = "transformer"
     FLAGS.hparams_set = "transformer_big_single_gpu_batch_size"
     FLAGS.output_dir = f"{HOMEPATH}/t2t_train/new_medicine_new/{FLAGS.problems}/{FLAGS.model}-{FLAGS.hparams_set}"
-
+    FLAGS.worker_gpu = 0
 
     tf.logging.set_verbosity(tf.logging.INFO)
     trainer_lib.set_random_seed(FLAGS.random_seed)

@@ -345,7 +345,7 @@ class T2TModel(base.Layer):
 
     Args:
       features: an map of string to `Tensor`
-      decode_length: an integer.  How many additional timesteps to decode.
+      decode_length: an integer.  How many additional timesteps to mydecode.sh.
 
     Returns:
       logits: `Tensor`
@@ -386,7 +386,7 @@ class T2TModel(base.Layer):
 
     Args:
       features: an map of string to `Tensor`
-      decode_length: an integer.  How many additional timesteps to decode.
+      decode_length: an integer.  How many additional timesteps to mydecode.sh.
       beam_size: number of beams.
       top_beams: an integer. How many of the beams to return.
       alpha: Float that controls the length penalty. larger the alpha, stronger
@@ -425,7 +425,7 @@ class T2TModel(base.Layer):
 
     Args:
       features: an map of string to `Tensor`
-      decode_length: an integer.  How many additional timesteps to decode.
+      decode_length: an integer.  How many additional timesteps to mydecode.sh.
       beam_size: number of beams.
       top_beams: an integer. How many of the beams to return.
       alpha: Float that controls the length penalty. larger the alpha, stronger
@@ -445,7 +445,7 @@ class T2TModel(base.Layer):
 
     Args:
       features: an map of string to `Tensor`
-      decode_length: an integer.  How many additional timesteps to decode.
+      decode_length: an integer.  How many additional timesteps to mydecode.sh.
       beam_size: number of beams.
       top_beams: an integer. How many of the beams to return.
       alpha: Float that controls the length penalty. larger the alpha, stronger
@@ -497,7 +497,7 @@ class T2TModel(base.Layer):
 
     target_modality = self._problem_hparams.target_modality
     vocab_size = target_modality.top_dimensionality
-    # Setting decode length to input length + decode_length
+    # Setting mydecode.sh length to input length + decode_length
     decode_length = tf.constant(decode_length)
     if "partial_targets" not in features:
       decode_length += common_layers.shape_list(features["inputs"])[1]
@@ -532,7 +532,7 @@ class T2TModel(base.Layer):
 
     Args:
       features: an map of string to `Tensor`
-      decode_length: an integer.  How many additional timesteps to decode.
+      decode_length: an integer.  How many additional timesteps to mydecode.sh.
 
     Returns:
        samples: an integer `Tensor`.
@@ -548,7 +548,7 @@ class T2TModel(base.Layer):
 
     Args:
       features: an map of string to `Tensor`
-      decode_length: an integer.  How many additional timesteps to decode.
+      decode_length: an integer.  How many additional timesteps to mydecode.sh.
 
     Returns:
        samples: an integer `Tensor`.

@@ -17,7 +17,7 @@ r"""Decode from trained T2T models.
 
 This binary performs inference using the Estimator API.
 
-Example usage to decode from dataset:
+Example usage to mydecode.sh from dataset:
 
   t2t-decoder \
       --data_dir ~/data \
@@ -25,7 +25,7 @@ Example usage to decode from dataset:
       --model=transformer
       --hparams_set=transformer_base
 
-Set FLAGS.decode_interactive or FLAGS.decode_from_file for alternative decode
+Set FLAGS.decode_interactive or FLAGS.decode_from_file for alternative mydecode.sh
 sources.
 """
 from __future__ import absolute_import

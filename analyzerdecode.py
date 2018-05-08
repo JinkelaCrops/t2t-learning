@@ -12,28 +12,7 @@ parser.add_argument('--dict_type', default="raw")
 args = parser.parse_args()
 
 
-def sub_sent(sent, sub_order_dict):
-    for rep, target in sub_order_dict:
-        m = re.search(rep, sent)
-        sent = sent[:m.start()] + target + sent[m.end():] if m is not None else sent
-    return sent
 
-
-def decode_sent(sents, sents_dict):
-    bad_sents = []
-    zh_decode = []
-    for k, (sent, sub_dict) in enumerate(zip(sents, sents_dict)):
-        try:
-            if len(sub_dict) > 0:
-                zh_decode.append(sub_sent(sent, sub_dict))
-            else:
-                zh_decode.append(sent)
-        except Exception as e:
-            bad_sents.append([sent, sub_dict])
-            zh_decode.append(sent)
-    if len(bad_sents) > 0:
-        print("decode_sent: warning: bad_sent!")
-    return zh_decode
 
 
 if __name__ == '__main__':

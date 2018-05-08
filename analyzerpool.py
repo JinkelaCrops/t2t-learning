@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from analyzerutils import Token
-from analyzerutils import SentTokenInfo
+from mynmt.analyzeutils import Token
+from mynmt.analyzeutils import SentTokenInfo
 import numpy as np
 import json
-import sys
 # from concurrent.futures import ProcessPoolExecutor
 import argparse
 

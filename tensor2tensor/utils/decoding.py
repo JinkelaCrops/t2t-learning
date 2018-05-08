@@ -330,6 +330,26 @@ def make_input_fn_from_generator(gen):
   return input_fn
 
 
+def make_input_fn_from_one(gen):
+  """Use py_func to yield elements from the given one."""
+  first_ex = gen
+  flattened = tf.contrib.framework.nest.flatten(first_ex)
+  types = [t.dtype for t in flattened]
+  shapes = [[None] * len(t.shape) for t in flattened]
+  first_ex_list = [first_ex]
+
+  def py_func():
+    example = first_ex_list[0]
+    return tf.contrib.framework.nest.flatten(example)
+
+  def input_fn():
+    flat_example = tf.py_func(py_func, [], types)
+    _ = [t.set_shape(shape) for t, shape in zip(flat_example, shapes)]
+    example = tf.contrib.framework.nest.pack_sequence_as(first_ex, flat_example)
+    return example
+  return input_fn
+
+
 def decode_interactively(estimator, hparams, decode_hp):
   """Interactive decoding."""
 
@@ -396,6 +416,40 @@ def _decode_batch_input_fn(problem_id, num_decode_batches, sorted_inputs,
     }
 
 
+def _decode_batch_input_fn_list(problem_id, num_decode_batches, sorted_inputs,
+                           vocabulary, batch_size, max_input_size):
+  tf.logging.info(" batch %d" % num_decode_batches)
+  # First reverse all the input sentences so that if you're going to get OOMs,
+  # you'll see it in the first batch
+  sorted_inputs.reverse()
+  aa = []
+  for b in range(num_decode_batches):
+    tf.logging.info("Decoding batch %d" % b)
+    batch_length = 0
+    batch_inputs = []
+    for inputs in sorted_inputs[b * batch_size:(b + 1) * batch_size]:
+      input_ids = vocabulary.encode(inputs)
+      if max_input_size > 0:
+        # Subtract 1 for the EOS_ID.
+        input_ids = input_ids[:max_input_size - 1]
+      input_ids.append(text_encoder.EOS_ID)
+      batch_inputs.append(input_ids)
+      if len(input_ids) > batch_length:
+        batch_length = len(input_ids)
+    final_batch_inputs = []
+    for input_ids in batch_inputs:
+      assert len(input_ids) <= batch_length
+      x = input_ids + [0] * (batch_length - len(input_ids))
+      final_batch_inputs.append(x)
+
+    a = {
+        "inputs": np.array(final_batch_inputs).astype(np.int32),
+        "problem_choice": np.array(problem_id).astype(np.int32),
+    }
+    aa.append(a)
+  return aa
+
+
 def _interactive_input_fn(hparams):
   """Generator that reads from the terminal and yields "interactive inputs".
 
@@ -436,8 +490,8 @@ def _interactive_input_fn(hparams):
               "  in=<input_problem>  (set the input problem number)\n"
               "  ou=<output_problem> (set the output problem number)\n"
               "  ns=<num_samples>    (changes number of samples, default: 1)\n"
-              "  dl=<decode_length>  (changes decode length, default: 100)\n"
-              "  <%s>                (decode)\n"
+              "  dl=<decode_length>  (changes mydecode.sh length, default: 100)\n"
+              "  <%s>                (mydecode.sh)\n"
               "  q                   (quit)\n"
               ">" % (num_samples, decode_length, "source_string"
                      if has_input else "target_prefix"))

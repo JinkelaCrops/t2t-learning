@@ -163,7 +163,7 @@ class ByteTextEncoder(TextEncoder):
         decoded_ids.append(int2byte(id_ - numres))
     if six.PY2:
       return "".join(decoded_ids)
-    # Python3: join byte arrays and then decode string
+    # Python3: join byte arrays and then mydecode.sh string
     return b"".join(decoded_ids).decode("utf-8", "replace")
 
   def decode_list(self, ids):
@@ -175,7 +175,7 @@ class ByteTextEncoder(TextEncoder):
         decoded_ids.append(RESERVED_TOKENS_BYTES[int(id_)])
       else:
         decoded_ids.append(int2byte(id_ - numres))
-    # Python3: join byte arrays and then decode string
+    # Python3: join byte arrays and then mydecode.sh string
     return decoded_ids
 
   @property
@@ -389,7 +389,7 @@ class SubwordTextEncoder(TextEncoder):
   A SubwordTextEncoder is built from a corpus (so it is tailored to the text in
   the corpus), and stored to a file. See text_encoder_build_subword.py.
 
-  It can then be loaded and used to encode/decode any text.
+  It can then be loaded and used to encode/mydecode.sh any text.
 
   Encoding has four phases:
 

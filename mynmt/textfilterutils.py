@@ -78,3 +78,10 @@ class Unpack(Base):
             zh, en = self.bisentence.split(self.sep)
         zh, en, change_order = self.whichzh(zh, en)
         return zh, en, change_order
+
+
+class AfterProcess(Base):
+    @staticmethod
+    def afterprocess(line):
+        line = re.sub(" +", " ", line).strip()
+        return line

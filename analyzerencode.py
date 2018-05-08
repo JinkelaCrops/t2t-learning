@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from analyzerutils import Token
-from analyzerutils import SentTokenInfo
+from mynmt.analyzeutils import Token
+from mynmt.analyzeutils import SentTokenInfo
 import json
 import argparse
 
@@ -27,8 +27,8 @@ if __name__ == '__main__':
             if k % args.report == args.report - 1:
                 print(f"analyzerencoder info: execute {file_name} sentence No.{k+1}")
 
-    with open(file_path + ".decode", "w", encoding="utf8") as w0:
+    with open(file_path + ".mydecode.sh", "w", encoding="utf8") as w0:
         w0.writelines([x+"\n" for x in lines])
-    with open(file_path + ".decode.dict", "w", encoding="utf8") as w0_od:
+    with open(file_path + ".mydecode.sh.dict", "w", encoding="utf8") as w0_od:
         json.dump(file_dict, w0_od, ensure_ascii=False)
-    print(f"analyzerencoder info: write down {file_name}.decode, {file_name}.decode.dict")
+    print(f"analyzerencoder info: write down {file_name}.mydecode.sh, {file_name}.mydecode.sh.dict")

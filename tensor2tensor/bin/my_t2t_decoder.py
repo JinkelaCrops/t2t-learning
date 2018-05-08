@@ -17,7 +17,7 @@ r"""Decode from trained T2T models.
 
 This binary performs inference using the Estimator API.
 
-Example usage to decode from dataset:
+Example usage to mydecode.sh from dataset:
 
   t2t-decoder \
       --data_dir ~/data \
@@ -25,7 +25,7 @@ Example usage to decode from dataset:
       --model=transformer
       --hparams_set=transformer_base
 
-Set FLAGS.decode_interactive or FLAGS.decode_from_file for alternative decode
+Set FLAGS.decode_interactive or FLAGS.decode_from_file for alternative mydecode.sh
 sources.
 """
 from __future__ import absolute_import
@@ -107,8 +107,9 @@ def main(_):
     FLAGS.hparams_set = "transformer_big_single_gpu_batch_size"
     FLAGS.output_dir = f"{HOMEPATH}/t2t_train/new_medicine_new/{FLAGS.problems}/{FLAGS.model}-{FLAGS.hparams_set}"
     FLAGS.decode_hparams = "beam_size=4,alpha=0.6"
-    FLAGS.decode_from_file = f"{TMP_DIR}/seg.{FILE_NAME}.zh.decode"
-    FLAGS.decode_to_file = f"{TMP_DIR}/seg.{FILE_NAME}.en.decode.translation"
+    FLAGS.decode_from_file = f"{TMP_DIR}/seg.{FILE_NAME}.zh.mydecode.sh"
+    FLAGS.decode_to_file = f"{TMP_DIR}/seg.{FILE_NAME}.en.mydecode.sh.translation"
+    # FLAGS.worker_gpu = 0
     # FLAGS.decode_interactive = True
 
     tf.logging.set_verbosity(tf.logging.INFO)
@@ -125,11 +126,13 @@ def main(_):
         decode_hparams=decode_hp,
         use_tpu=False)
 
-    # decode(estimator, hp, decode_hp)
+    # mydecode.sh(estimator, hp, decode_hp)
     ###################################################################################
     from tensor2tensor.utils.decoding import _get_sorted_inputs
     from tensor2tensor.utils.decoding import _decode_batch_input_fn
+    from tensor2tensor.utils.decoding import _decode_batch_input_fn_list
     from tensor2tensor.utils.decoding import make_input_fn_from_generator
+    from tensor2tensor.utils.decoding import make_input_fn_from_one
     from tensor2tensor.utils.decoding import _decode_input_tensor_to_features_dict
     from tensor2tensor.utils.decoding import log_decode_results
     ###################################################################################
@@ -138,7 +141,7 @@ def main(_):
     decode_to_file = FLAGS.decode_to_file
     """Compute predictions on entries in filename and write them out."""
     if not decode_hp.batch_size:
-        decode_hp.batch_size = 32
+        decode_hp.batch_size = 1
     tf.logging.info(
         "decode_hp.batch_size not specified; default=%d" % decode_hp.batch_size)
 
@@ -156,15 +159,19 @@ def main(_):
     num_decode_batches = (len(sorted_inputs) - 1) // decode_hp.batch_size + 1
 
     def input_fn():
-
-        input_gen = _decode_batch_input_fn(
+        index = 0
+        input_gen = _decode_batch_input_fn_list(
             problem_id, num_decode_batches, sorted_inputs, inputs_vocab,
-            decode_hp.batch_size, decode_hp.max_input_size)
+            decode_hp.batch_size, decode_hp.max_input_size)[index]
 
-        gen_fn = make_input_fn_from_generator(input_gen)
+        gen_fn = make_input_fn_from_one(input_gen)
         example = gen_fn()
         return _decode_input_tensor_to_features_dict(example, hparams)
 
+    aa = _decode_batch_input_fn_list(
+            problem_id, num_decode_batches, sorted_inputs, inputs_vocab,
+            decode_hp.batch_size, decode_hp.max_input_size)[0]
+    # bb = np.array([aa["inputs"].T])
     decodes = []
     # result_iter = estimator.predict(input_fn)
     # ------------------------------------------------------------------------
@@ -179,10 +186,10 @@ def main(_):
     checkpoint_path = None
     # Check that model has been trained.
     if not checkpoint_path:
-        checkpoint_path = saver.latest_checkpoint(estimator._model_dir)
+        checkpoint_path = saver.latest_checkpoint(FLAGS.output_dir)
     if not checkpoint_path:
         raise ValueError('Could not find trained model in model_dir: {}.'.format(
-            estimator._model_dir))
+            FLAGS.output_dir))
 
     random_seed.set_random_seed(estimator._config.tf_random_seed)
     # estimator._create_and_assert_global_step(g)
@@ -204,13 +211,13 @@ def main(_):
 
     preds = []
     for i in range(estimator._extract_batch_length(preds_evaluated)):
-        pred_dict_tmp =  {
+        pred_dict_tmp = {
             key: value[i]
             for key, value in six.iteritems(preds_evaluated)
         }
         preds.append(pred_dict_tmp)
 
-        mon_sess.close()
+    mon_sess.close()
 
     # ------------------------------------------------------------------------
     result_iter = preds
@@ -244,6 +251,7 @@ def main(_):
                                                     None, inputs_vocab, targets_vocab)
             decodes.append(decoded_outputs)
     print(decodes)
+
 
 if __name__ == "__main__":
     tf.app.run()

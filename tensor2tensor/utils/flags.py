@@ -108,5 +108,5 @@ flags.DEFINE_integer("ps_replicas", 0, "How many ps replicas.")
 # Decoding flags
 flags.DEFINE_string(
     "decode_hparams", "",
-    "Comma-separated list of name=value pairs to control decode behavior. "
+    "Comma-separated list of name=value pairs to control mydecode.sh behavior. "
     "See decoding.decode_hparams for defaults.")

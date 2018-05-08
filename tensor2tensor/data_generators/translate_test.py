@@ -66,7 +66,7 @@ class TranslateTest(tf.test.TestCase):
     self.assertEqual(results_src[1], character_vocab.encode("source2"))
     self.assertEqual(results_tgt[0], character_vocab.encode("target1"))
     self.assertEqual(results_tgt[1], character_vocab.encode("target2"))
-    # Then decode the results and compare with the original strings;
+    # Then mydecode.sh the results and compare with the original strings;
     # this is a comparison of strings
     self.assertEqual(character_vocab.decode(results_src[0]), "source1")
     self.assertEqual(character_vocab.decode(results_src[1]), "source2")

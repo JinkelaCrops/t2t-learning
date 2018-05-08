@@ -228,5 +228,22 @@ class SentTokenInfo(object):
 def sub_sent(sent, sub_order_dict):
     for rep, target in sub_order_dict:
         m = re.search(rep, sent)
-        sent = sent[:m.start()] + target + sent[m.end():]
+        sent = sent[:m.start()] + target + sent[m.end():] if m is not None else sent
     return sent
+
+
+def decode_sent(sents, sents_dict):
+    bad_sents = []
+    decode = []
+    for k, (sent, sub_dict) in enumerate(zip(sents, sents_dict)):
+        try:
+            if len(sub_dict) > 0:
+                decode.append(sub_sent(sent, sub_dict))
+            else:
+                decode.append(sent)
+        except Exception as e:
+            bad_sents.append([sent, sub_dict])
+            decode.append(sent)
+    if len(bad_sents) > 0:
+        print("decode_sent: warning: bad_sent!")
+    return decode

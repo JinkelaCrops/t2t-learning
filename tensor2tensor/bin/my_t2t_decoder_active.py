@@ -17,7 +17,7 @@ r"""Decode from trained T2T models.
 
 This binary performs inference using the Estimator API.
 
-Example usage to decode from dataset:
+Example usage to mydecode.sh from dataset:
 
   t2t-decoder \
       --data_dir ~/data \
@@ -25,7 +25,7 @@ Example usage to decode from dataset:
       --model=transformer
       --hparams_set=transformer_base
 
-Set FLAGS.decode_interactive or FLAGS.decode_from_file for alternative decode
+Set FLAGS.decode_interactive or FLAGS.decode_from_file for alternative mydecode.sh
 sources.
 """
 from __future__ import absolute_import
@@ -60,9 +60,14 @@ flags.DEFINE_integer("decode_shards", 1, "Number of decoding replicas.")
 if FLAGS.gpuid:
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
     os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpuid
-
-
 # ---------------------------------------------------------------
+
+def create_estimator(run_config, hparams):
+    return trainer_lib.create_estimator(
+        FLAGS.model,
+        hparams,
+        run_config,
+        decode_hparams=decoding.decode_hparams(FLAGS.decode_hparams))
 
 def create_hparams():
     return trainer_lib.create_hparams(
@@ -97,96 +102,126 @@ def decode(estimator, hparams, decode_hp):
 
 def main(_):
     HOMEPATH = "D:/Projects/t2t_med"
-    # TASK = "med_test/cpu/gen"
-    # FILE_NAME = "test.small"
-    # TMP_DIR = f"{HOMEPATH}/t2t_test/{TASK}"
 
     FLAGS.data_dir = f"{HOMEPATH}/t2t_data/new_medicine_new"
     FLAGS.problems = "translate_zhen_new_med_small_vocab"
     FLAGS.model = "transformer"
     FLAGS.hparams_set = "transformer_big_single_gpu_batch_size"
     FLAGS.output_dir = f"{HOMEPATH}/t2t_train/new_medicine_new/{FLAGS.problems}/{FLAGS.model}-{FLAGS.hparams_set}"
-    FLAGS.decode_hparams = "beam_size=4,alpha=0.6"
-    # FLAGS.decode_from_file = f"{TMP_DIR}/seg.{FILE_NAME}.zh.decode"
-    # FLAGS.decode_to_file = f"{TMP_DIR}/seg.{FILE_NAME}.en.decode.translation"
-    FLAGS.decode_interactive = True
+
 
     tf.logging.set_verbosity(tf.logging.INFO)
+    trainer_lib.set_random_seed(FLAGS.random_seed)
     usr_dir.import_usr_dir(FLAGS.t2t_usr_dir)
-    FLAGS.use_tpu = False  # decoding not supported on TPU
 
-    hp = create_hparams()
-    decode_hp = create_decode_hparams()
+    ckpt_dir = os.path.expanduser(FLAGS.output_dir)
 
-    estimator = trainer_lib.create_estimator(
-        FLAGS.model,
-        hp,
-        t2t_trainer.create_run_config(hp),
-        decode_hparams=decode_hp,
-        use_tpu=False)
+    hparams = create_hparams()
+    hparams.no_data_parallelism = True  # To clear the devices
+    run_config = t2t_trainer.create_run_config(hparams)
 
-    # decode(estimator, hp, decode_hp)
-    ##############################################################
-    from tensor2tensor.utils.decoding import _interactive_input_tensor_to_features_dict
-    from tensor2tensor.utils.decoding import _interactive_input_fn
-    from tensor2tensor.utils.decoding import make_input_fn_from_generator
-    ##############################################################
-    hparams = hp
+    estimator = create_estimator(run_config, hparams)
 
-    def input_fn():
-        gen_fn = make_input_fn_from_generator(_interactive_input_fn(hparams))
-        example = gen_fn()
-        example = _interactive_input_tensor_to_features_dict(example, hparams)
-        return example
+    ############################################
+    from tensorflow.python.estimator.estimator import random_seed
+    from tensorflow.contrib.learn.python.learn.utils.saved_model_export_utils import make_export_strategy
+    from tensorflow.python.framework import ops
+    ############################################
+    g = ops.get_default_graph()
+    with ops.Graph().as_default() as g:
+        estimator._create_and_assert_global_step(g)
+        random_seed.set_random_seed(estimator._config.tf_random_seed)
+        serving_input_receiver = make_export_strategy
 
-    result_iter = estimator.predict(input_fn)
-    for result in result_iter:
-        problem_idx = result["problem_choice"]
-        is_image = False  # TODO(lukaszkaiser): find out from problem id / class.
-        targets_vocab = hparams.problems[problem_idx].vocabulary["targets"]
+        # Call the model_fn and collect the export_outputs.
+        estimator_spec = self._call_model_fn(
+            features=serving_input_receiver.features,
+            labels=None,
+            mode=model_fn_lib.ModeKeys.PREDICT,
+            config=self.config)
 
-        if decode_hp.return_beams:
-            beams = np.split(result["outputs"], decode_hp.beam_size, axis=0)
-            scores = None
-            if "scores" in result:
-                scores = np.split(result["scores"], decode_hp.beam_size, axis=0)
-            for k, beam in enumerate(beams):
-                tf.logging.info("BEAM %d:" % k)
-                beam_string = targets_vocab.decode(_save_until_eos(beam, is_image))
-                if scores is not None:
-                    tf.logging.info("\"%s\"\tScore:%f" % (beam_string, scores[k]))
-                else:
-                    tf.logging.info("\"%s\"" % beam_string)
-        else:
-            if decode_hp.identity_output:
-                tf.logging.info(" ".join(map(str, result["outputs"].flatten())))
-            else:
-                tf.logging.info(
-                    targets_vocab.decode(_save_until_eos(result["outputs"], is_image)))
+        # Build the SignatureDefs from receivers and all outputs
+        signature_def_map = build_all_signature_defs(
+            serving_input_receiver.receiver_tensors,
+            estimator_spec.export_outputs,
+            serving_input_receiver.receiver_tensors_alternatives)
+
+        if not checkpoint_path:
+            # Locate the latest checkpoint
+            checkpoint_path = saver.latest_checkpoint(self._model_dir)
+        if not checkpoint_path:
+            raise ValueError("Couldn't find trained model at %s." % self._model_dir)
+
+        export_dir = get_timestamped_export_dir(export_dir_base)
+        temp_export_dir = get_temp_export_dir(export_dir)
+
+        # TODO(soergel): Consider whether MonitoredSession makes sense here
+        with tf_session.Session(config=self._session_config) as session:
+
+            saver_for_restore = estimator_spec.scaffold.saver or saver.Saver(
+                sharded=True)
+            saver_for_restore.restore(session, checkpoint_path)
+
+            # TODO(b/36111876): replace legacy_init_op with main_op mechanism
+            # pylint: disable=protected-access
+            local_init_op = (
+                    estimator_spec.scaffold.local_init_op or
+                    monitored_session.Scaffold._default_local_init_op())
+            # pylint: enable=protected-access
+
+            # Perform the export
+            builder = saved_model_builder.SavedModelBuilder(temp_export_dir)
+            builder.add_meta_graph_and_variables(
+                session, [tag_constants.SERVING],
+                signature_def_map=signature_def_map,
+                assets_collection=ops.get_collection(
+                    ops.GraphKeys.ASSET_FILEPATHS),
+                legacy_init_op=local_init_op)
+            builder.save(as_text)
+
+        # Add the extra assets
+        if assets_extra:
+            assets_extra_path = os.path.join(compat.as_bytes(temp_export_dir),
+                                             compat.as_bytes('assets.extra'))
+            for dest_relative, source in assets_extra.items():
+                dest_absolute = os.path.join(compat.as_bytes(assets_extra_path),
+                                             compat.as_bytes(dest_relative))
+                dest_path = os.path.dirname(dest_absolute)
+                gfile.MakeDirs(dest_path)
+                gfile.Copy(source, dest_absolute)
+
+        gfile.Rename(temp_export_dir, export_dir)
 
 
 
 
+    from google.protobuf import text_format as pbtf
 
+    gdef = tf.GraphDef()
 
+    with open(GRAPH_NAME + "/saved_model.pbtxt", 'r') as f:
+        graph_str = f.read()
 
+    pbtf.Merge(graph_str, gdef)
 
+    tf.import_graph_def(gdef)
 
+    tf.GraphDef()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # Access saved Variables directly
+    print(sess.run('bias:0'))
+    # This will print 2, which is the value of bias that we saved
+    # Now, let's access and create placeholders variables and
+    # create feed-dict to feed new data
+    graph = tf.get_default_graph()
+    w1 = graph.get_tensor_by_name("w1:0")
+    w2 = graph.get_tensor_by_name("w2:0")
+    feed_dict = {w1: 13.0, w2: 17.0}
+    # Now, access the op that you want to run.
+    op_to_restore = graph.get_tensor_by_name("op_to_restore:0")
+    print(sess.run(op_to_restore, feed_dict))
+    # This will print 60 which is calculated
+    sess.close()
 
     ###################################################################################
     from tensor2tensor.utils.decoding import _get_sorted_inputs
@@ -269,7 +304,6 @@ def main(_):
                             'This is probably a mistake.')
         return result, input_hooks
 
-
     estimator_spec = estimator._call_model_fn(
         features, None, model_fn_lib.ModeKeys.PREDICT, estimator.config)
     predictions = estimator._extract_keys(estimator_spec.predictions, None)  # predict_keys is None
@@ -285,7 +319,7 @@ def main(_):
 
     preds = []
     for i in range(estimator._extract_batch_length(preds_evaluated)):
-        pred_dict_tmp =  {
+        pred_dict_tmp = {
             key: value[i]
             for key, value in six.iteritems(preds_evaluated)
         }
@@ -325,6 +359,7 @@ def main(_):
                                                     None, inputs_vocab, targets_vocab)
             decodes.append(decoded_outputs)
     print(decodes)
+
 
 if __name__ == "__main__":
     tf.app.run()

@@ -148,7 +148,7 @@ def rouge_l_fscore(predictions, labels, **unused_kwargs):
   """ROUGE scores computation between labels and predictions.
 
   This is an approximate ROUGE scoring method since we do not glue word pieces
-  or decode the ids and tokenize the output.
+  or mydecode.sh the ids and tokenize the output.
 
   Args:
     predictions: tensor, model predicitons
@@ -231,7 +231,7 @@ def rouge_2_fscore(predictions, labels, **unused_kwargs):
   """ROUGE-2 F1 score computation between labels and predictions.
 
   This is an approximate ROUGE scoring method since we do not glue word pieces
-  or decode the ids and tokenize the output.
+  or mydecode.sh the ids and tokenize the output.
 
   Args:
     predictions: tensor, model predicitons

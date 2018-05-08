@@ -169,7 +169,7 @@ class Transformer(t2t_model.T2TModel):
 
         Args:
           features: an map of string to `Tensor`
-          decode_length: an integer.  How many additional timesteps to decode.
+          decode_length: an integer.  How many additional timesteps to mydecode.sh.
 
         Returns:
            samples: [batch_size, input_length + decode_length]
@@ -188,7 +188,7 @@ class Transformer(t2t_model.T2TModel):
 
         Args:
           features: an map of string to `Tensor`
-          decode_length: an integer.  How many additional timesteps to decode.
+          decode_length: an integer.  How many additional timesteps to mydecode.sh.
           beam_size: number of beams.
           top_beams: an integer. How many of the beams to return.
           alpha: Float that controls the length penalty. larger the alpha, stronger
@@ -215,7 +215,7 @@ class Transformer(t2t_model.T2TModel):
 
         Args:
           features: a map of string to model  features.
-          decode_length: an integer.  How many additional timesteps to decode.
+          decode_length: an integer.  How many additional timesteps to mydecode.sh.
           beam_size: number of beams.
           top_beams: an integer. How many of the beams to return.
           alpha: Float that controls the length penalty. larger the alpha, stronger
@@ -349,7 +349,7 @@ def fast_decode(encoder_output,
       symbols_to_logits_fn: Incremental decoding; function mapping triple
         `(ids, step, cache)` to symbol logits.
       hparams: run hyperparameters
-      decode_length: an integer.  How many additional timesteps to decode.
+      decode_length: an integer.  How many additional timesteps to mydecode.sh.
       vocab_size: Output vocabulary size.
       beam_size: number of beams.
       top_beams: an integer. How many of the beams to return.

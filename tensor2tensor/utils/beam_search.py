@@ -207,7 +207,7 @@ def beam_search(symbols_to_logits_fn,
         handed to symbols_to_logits_fn (after expanding to beam size)
         [batch_size]
     beam_size: Size of the beam.
-    decode_length: Number of steps to decode for.
+    decode_length: Number of steps to mydecode.sh for.
     vocab_size: Size of the vocab, must equal the size of the logits returned by
         symbols_to_logits_fn
     alpha: alpha for length penalty.
@@ -317,7 +317,7 @@ def beam_search(symbols_to_logits_fn,
     on the assumption the vocab size is > beam size. If this is true, we'll
     have at least beam_size non <EOS> extensions if we extract the next top
     2*beam words.
-    Length penalty is given by = (5+len(decode)/6) ^ -\alpha. Pls refer to
+    Length penalty is given by = (5+len(mydecode.sh)/6) ^ -\alpha. Pls refer to
     https://arxiv.org/abs/1609.08144.
 
     Args:

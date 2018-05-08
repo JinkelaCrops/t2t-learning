@@ -430,7 +430,7 @@ class Problem(object):
         Args:
           mode: tf.estimator.ModeKeys; determines which files to read from.
           data_dir: directory that contains data files.
-          num_threads: int, number of threads to use for decode and preprocess
+          num_threads: int, number of threads to use for mydecode.sh and preprocess
             Dataset.map calls.
           output_buffer_size: int, how many elements to prefetch in Dataset.map
             calls.

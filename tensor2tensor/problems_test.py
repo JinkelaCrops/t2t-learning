@@ -42,7 +42,7 @@ class ProblemsTest(tf.test.TestCase):
     dev_dataset = problem.dataset(MODES.EVAL)
 
     # Access vocab size and other info (e.g. the data encoders used to
-    # encode/decode data for the feature, used below) through feature_info.
+    # encode/mydecode.sh data for the feature, used below) through feature_info.
     feature_info = problem.feature_info
     self.assertTrue(feature_info["inputs"].vocab_size > 0)
     self.assertTrue(feature_info["targets"].vocab_size > 0)

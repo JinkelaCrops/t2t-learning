@@ -126,7 +126,7 @@ def bleu_score(predictions, labels, **unused_kwargs):
   """BLEU score computation between labels and predictions.
 
   An approximate BLEU scoring method since we do not glue word pieces or
-  decode the ids and tokenize the output. By default, we use ngram order of 4
+  mydecode.sh the ids and tokenize the output. By default, we use ngram order of 4
   and use brevity penalty. Also, this does not have beam search.
 
   Args:
