@@ -9,16 +9,14 @@ import argparse
 
 parser = argparse.ArgumentParser(description="my_merge")
 parser.add_argument('-i', "--input_dir", required=True)
-parser.add_argument('-sep', "--separator", required=True)
 parser.add_argument('--task_name', default="data")
 parser.add_argument('--bucket_size', default=30 * 1024 ** 2, type=int)
 parser.add_argument('--workers', default=4, type=int)
 
-args = parser.parse_args([
-    "-i", "../test/medicine.sample",
-    "-sep", ' ||| ',
-])
-# args = parser.parse_args()
+# args = parser.parse_args([
+#     "-i", "../test/medicine.sample",
+# ])
+args = parser.parse_args()
 args.output_dir = args.input_dir + ".data"
 args.output_name = args.task_name
 

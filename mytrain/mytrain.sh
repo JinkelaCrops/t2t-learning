@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-source activate py36
+export PYTHONPATH="/home/tmxmall/PycharmProjects/medicine-translate/t2t-learning-2:$PYTHONPATH"
 
-TMP_DIR=$HOMEPATH/t2t_datagen/new_medicine_all
+$TMP_DIR="/home/tmxmall/PycharmProjects/medicine-translate/t2t-learning-2/test/medicine.sample"
 
-# test split
-python easysplit.py -f $TMP_DIR/medicine.txt --train data --valid test --valid_size 1000 --shuffle True
-# unpack test
-python unpack.py -f $TMP_DIR/test -s " ||| "
+# merge data if need
+python mytrain/my_merge.py -i $TMP_DIR
+# split test
+python mytrain/my_split.py -f $TMP_DIR.data/data --train_name data --valid_name test --valid_size 100
 
 ## Step 1
 ## data filter

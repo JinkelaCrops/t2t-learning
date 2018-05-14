@@ -7,12 +7,13 @@ parser.add_argument('--train_name', default="train")
 parser.add_argument('--valid_name', default="valid")
 parser.add_argument("--valid_size", default=10000, type=int)
 parser.add_argument("--shuffle", default=True, type=bool)
-args = parser.parse_args([
-    "-f", "../test/medicine.sample.data.filter/data.data.src.encode.dict",
-    "--train_name", "train",
-    "--valid_name", "valid",
-    "--valid_size", "100"
-])
+# args = parser.parse_args([
+#     "-f", "../test/medicine.sample.data.filter/data.data.src.encode.dict",
+#     "--train_name", "train",
+#     "--valid_name", "valid",
+#     "--valid_size", "100"
+# ])
+args = parser.parse_args()
 
 args.train_path = args.file_prefix + "." + args.train_name
 args.valid_path = args.file_prefix + "." + args.valid_name
