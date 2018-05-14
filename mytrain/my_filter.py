@@ -18,11 +18,11 @@ parser.add_argument('-sep', "--separator", required=True)
 parser.add_argument('--bucket_size', default=30 * 1024 ** 2, type=int)
 parser.add_argument('--workers', default=4, type=int)
 
-args = parser.parse_args([
-    "-f", "../test/medicine.sample.data/data.data",
-    "-sep", ' ||| '
-])
-# args = parser.parse_args()
+# args = parser.parse_args([
+#     "-f", "../test/medicine.sample.data/data.data",
+#     "-sep", ' ||| '
+# ])
+args = parser.parse_args()
 args.input_dir = "/".join(args.file_prefix.split("/")[:-1])
 args.file_name = args.file_prefix.split("/")[-1]
 args.output_dir = args.input_dir + ".filter"
@@ -96,7 +96,7 @@ def submit_task(file_arg_dict):
         tgtlk.execute_token(tokens)
         field.tgt_encode = tgtlk.sub_token
         field.tgt_encode_dict = tgtlk.sub_order_dict
-        # tgt_file_dict.append(json.dumps(tgtlk.sub_order_dict, ensure_ascii=False))
+
         if analyze_filter.filter(field):
             fields.append(field)
 

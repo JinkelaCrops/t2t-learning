@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export PYTHONPATH="/home/tmxmall/PycharmProjects/medicine-translate/t2t-learning-2:$PYTHONPATH"
+
 # python tensor2tensor/bin/t2t_trainer.py --registry_help
 
 PROBLEM=translate_enzh_new_med_small_vocab

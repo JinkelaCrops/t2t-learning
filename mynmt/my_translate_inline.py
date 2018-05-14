@@ -22,7 +22,7 @@ parser.add_argument("--report", default=10000, type=int)
 parser.add_argument("--truncate", default=1E10, type=int)
 
 args = parser.parse_args([
-    "--file_path", "../medicine.sample.txt/medicine.sample.txt.zh",
+    "--file_path", "../test/medicine.sample.data/data.test.src",
     "--src_lan", "zh",
     "--tgt_lan", "en",
     "--truncate", "500"

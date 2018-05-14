@@ -5,10 +5,10 @@ import argparse
 
 parser = argparse.ArgumentParser(description="my_segment.py")
 parser.add_argument('-f', "--file_prefix")
-parser.add_argument('--lan', default="lan1")
+parser.add_argument('-lan', default="lan1")
 # args = parser.parse_args([
 #     "-f", "../test/medicine.sample.data.filter/data.data.tgt.encode.valid",
-#     "--lan", "en"
+#     "-lan", "en"
 # ])
 args = parser.parse_args()
 
