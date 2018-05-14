@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ def timit_generator(data_dir,
   Args:
     data_dir: path to the data directory.
     tmp_dir: path to temporary storage directory.
-    training: a Boolean; if true, we use the train set, otherwise the test set.
+    training: a Boolean; if true, we use the train set, otherwise the medicine.sample.txt set.
     how_many: how many inputs and labels to generate.
     start_from: from which input to start.
     eos_list: optional list of end of sentence tokens, otherwise use default

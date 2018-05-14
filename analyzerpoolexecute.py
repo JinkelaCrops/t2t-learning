@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from mynmt.analyzeutils import Token
-from mynmt.analyzeutils import SentTokenInfo
-from mynmt.textfilterutils import Unpack
+from processutils.analyze import Token
+from processutils.analyze import SentTokenInfo
+from processutils.textfilter import Unpack
 from utils.datatool import RemoteIO
 from utils.simplelog import Logger
 from concurrent.futures import ProcessPoolExecutor

@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import time
 
 # Dependency imports
 
@@ -90,11 +91,6 @@ flags.DEFINE_bool("report_zero", None,
                   "Store BLEU=0 and guess its time based on the oldest file.")
 
 
-path = "/media/yanpan/7D4CF1590195F939/Projects/tensor2tensor-1.4.2/tensor2tensor"
-
-FLAGS.reference = f"{path}/tmp/t2t_datagen/wmt_enzh_8192k_tok_dev.lang2.1"
-FLAGS.translation = f"{path}/tmp/t2t_datagen/translation.zh.1"
-
 def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
   if FLAGS.translation:
@@ -109,12 +105,20 @@ def main(_):
       bleu = 100 * bleu_hook.bleu_wrapper(FLAGS.reference, FLAGS.translation,
                                           case_sensitive=True)
       print("BLEU_cased = %6.2f" % bleu)
-    # return
+    return
 
   if not FLAGS.translations_dir:
     raise ValueError(
         "Either --translation or --translations_dir must be specified.")
   transl_dir = os.path.expanduser(FLAGS.translations_dir)
+  if not os.path.exists(transl_dir):
+    exit_time = time.time() + FLAGS.wait_minutes * 60
+    tf.logging.info("Translation dir %s does not exist, waiting till %s.",
+                    transl_dir, time.asctime(time.localtime(exit_time)))
+    while not os.path.exists(transl_dir):
+      time.sleep(10)
+      if time.time() > exit_time:
+        raise ValueError("Translation dir %s does not exist" % transl_dir)
 
   last_step_file = os.path.join(FLAGS.event_dir, "last_evaluated_step.txt")
   if FLAGS.min_steps == -1:
@@ -168,7 +172,6 @@ def main(_):
     with open(last_step_file, "w") as ls_file:
       ls_file.write(str(transl_file.steps) + "\n")
 
-main(_)
 
 if __name__ == "__main__":
   tf.app.run()

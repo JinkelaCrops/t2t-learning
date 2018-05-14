@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from mynmt.textfilterutils import Unpack
+from processutils.textfilter import Unpack
 import argparse
 
 parser = argparse.ArgumentParser(description="unpack.py")

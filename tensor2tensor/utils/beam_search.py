@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,6 +79,14 @@ def _expand_to_beam_size(tensor, beam_size):
   tile_dims[1] = beam_size
 
   return tf.tile(tensor, tile_dims)
+
+
+def get_state_shape_invariants(tensor):
+  """Returns the shape of the tensor but sets middle dims to None."""
+  shape = tensor.shape.as_list()
+  for i in range(1, len(shape) - 1):
+    shape[i] = None
+  return tf.TensorShape(shape)
 
 
 def log_prob_from_logits(logits):
@@ -200,6 +208,10 @@ def beam_search(symbols_to_logits_fn,
   capturing observed from these operations, tensors, clients can make
   assumptions about which step is being recorded.
 
+  WARNING: Assumes 2nd dimension of tensors in `states` and not invariant, this
+  means that the shape of the 2nd dimension of these tensors will not be
+  available (i.e. set to None) inside symbols_to_logits_fn.
+
   Args:
     symbols_to_logits_fn: Interface to the model, to provide logits.
         Shoud take [batch_size, decoded_ids] and return [batch_size, vocab_size]
@@ -207,7 +219,7 @@ def beam_search(symbols_to_logits_fn,
         handed to symbols_to_logits_fn (after expanding to beam size)
         [batch_size]
     beam_size: Size of the beam.
-    decode_length: Number of steps to mydecode.sh for.
+    decode_length: Number of steps to decode for.
     vocab_size: Size of the vocab, must equal the size of the logits returned by
         symbols_to_logits_fn
     alpha: alpha for length penalty.
@@ -317,7 +329,7 @@ def beam_search(symbols_to_logits_fn,
     on the assumption the vocab size is > beam size. If this is true, we'll
     have at least beam_size non <EOS> extensions if we extract the next top
     2*beam words.
-    Length penalty is given by = (5+len(mydecode.sh)/6) ^ -\alpha. Pls refer to
+    Length penalty is given by = (5+len(decode)/6) ^ -\alpha. Pls refer to
     https://arxiv.org/abs/1609.08144.
 
     Args:
@@ -513,8 +525,7 @@ def beam_search(symbols_to_logits_fn,
            tf.TensorShape([None, None, None]),
            finished_scores.get_shape(),
            finished_flags.get_shape(),
-           nest.map_structure(
-               lambda tensor: tf.TensorShape(tensor.shape), states),
+           nest.map_structure(get_state_shape_invariants, states),
        ],
        parallel_iterations=1,
        back_prop=False)

@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""tensor2tensor.problems test."""
+"""tensor2tensor.problems medicine.sample.txt."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -42,7 +42,7 @@ class ProblemsTest(tf.test.TestCase):
     dev_dataset = problem.dataset(MODES.EVAL)
 
     # Access vocab size and other info (e.g. the data encoders used to
-    # encode/mydecode.sh data for the feature, used below) through feature_info.
+    # encode/decode data for the feature, used below) through feature_info.
     feature_info = problem.feature_info
     self.assertTrue(feature_info["inputs"].vocab_size > 0)
     self.assertTrue(feature_info["targets"].vocab_size > 0)

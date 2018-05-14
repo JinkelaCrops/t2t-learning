@@ -4,7 +4,7 @@ import json
 import sys
 import argparse
 
-parser = argparse.ArgumentParser(description="easysplit.py")
+parser = argparse.ArgumentParser(description="my_split.py")
 parser.add_argument('-f', "--file_path")
 parser.add_argument('--train', default="train")
 parser.add_argument('--valid', default="valid")

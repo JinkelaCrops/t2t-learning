@@ -6,105 +6,134 @@
 # If this runs right, thank god, and I don't know why.
 # Maybe the answer, my friend, is blowing in the wind.
 import tornado.web
-import pickle
 import json
-import sys
 import os
+import shutil
 
-from app.simplelog import Logger
 from app.biz import understand_data
-from app.biz import linenum_to_pointer
+from app.biz import bucket_to_pointer
+from app.biz import file_scan
 from app.biz import Sync_io
+from tornado.escape import _unicode
+from tornado.web import HTTPError
 
-log = Logger("file-down", "file-down.log").log("F")
+# from loginst import logger
+from app.simplelog import Logger
+
+logger = Logger("file-down", "file-down.log").log("F")
 sync_io = Sync_io()
 
 
 class WriteDownHandler(tornado.web.RequestHandler):
-
     def decode_argument(self, value, name=None):
-        from tornado.escape import _unicode
-        from tornado.web import HTTPError
         try:
             return _unicode(value)
         except UnicodeDecodeError:
             return bytes(value)
         except:
-            raise HTTPError(400, "Invalid unicode or bytes in %s: %r" %
+            raise HTTPError(400, "[WriteDownHandler]: Invalid unicode or bytes in %s: %r" %
                             (name or "url", value[:40]))
 
     def post(self):
-        log.info("WriteDownHandler.post: get data from memory")
-        data = self.get_argument("data")
-        data = understand_data(data)
-        log.info("WriteDownHandler.post: got data")
-
-        file_name = self.get_argument("file_name")
-        if not isinstance(file_name, str):
-            log.warn("WriteDownHandler.post: TypeError: file_name is not string")
+        logger.info("[WriteDownHandler]: get data from memory")
+        write_data = self.get_argument("data")
+        write_data = understand_data(write_data)
+        path = self.get_argument("file_name")
+        if not isinstance(path, str):
+            logger.warn("[WriteDownHandler]: TypeError: not a file name")
             return
-
-        # path = data_dir % file_name
-        path = file_name
         write_flag = self.get_argument("write_mode")
         if not isinstance(write_flag, str):
-            log.warn("WriteDownHandler.post: TypeError: write_flag is not string")
+            logger.warn("[WriteDownHandler]: TypeError: write_flag is not string")
             return
-
-        log.info("WriteDownHandler.post: write data into %s" % path)
-
-        # with open(path, write_flag, encoding="utf8") as f:
-        #     f.writelines(data)
-
-        sync_io.write(path, write_flag, data)
-        log.info("WriteDownHandler.post: wrote done")
+        logger.info("[WriteDownHandler]: write data into %s" % path)
+        sync_io.write(path, {"flag": write_flag, "data": write_data})
+        logger.info("[SendOutHandler]: write done")
 
 
 class SendOutHandler(tornado.web.RequestHandler):
-
     def post(self):
-        file_name = self.get_argument("file_name")
-        if not isinstance(file_name, str):
-            log.warn("SendOutHandler.post: TypeError: file_name is not string")
+        path = self.get_argument("file_name")
+        if not isinstance(path, str):
+            logger.warn("[SendOutEndHandler]: TypeError: file_name is not string")
             return
-
-        # path = data_dir % file_name
-        path = file_name
         read_start = int(self.get_argument("read_start"))
-        read_nrows = int(self.get_argument("read_nrows"))
-        pointer = int(self.get_argument("pointer"))
-
-        if pointer:
-            log.info("SendOutHandler.post: send data from %s [%s] -> %s" % (path, read_start, read_nrows))
-        else:
-            log.info("SendOutHandler.post: send data from %s [%s : %s]" % (path, read_start, read_start + read_nrows))
-
-        # with open(path, "r", encoding="utf8") as f:
-        #     tmp = json.dumps({"data": line_read(f, read_start, read_nrows)})
-        # self.write(tmp)
-
-        self.write(sync_io.read(path, read_start, read_nrows, pointer))
-        log.info("SendOutHandler.post: sent data")
+        read_end = int(self.get_argument("read_end"))
+        logger.info("[SendOutHandler]: send data from %s [%s] -> [%s]" % (path, read_start, read_end))
+        self.write(sync_io.read(path, {"start": read_start, "end": read_end}))
+        logger.info("[SendOutHandler]: send done")
 
 
 class ExecHandler(tornado.web.RequestHandler):
-
     def post(self):
         python_code = self.get_argument("python_code")
         result_name = self.get_argument("result_name")
         if not isinstance(python_code, str):
-            log.warn("TypeError: python_code is not string")
+            logger.warn("[ExecHandler]: TypeError: python_code is not string")
             return
         if not isinstance(result_name, str):
-            log.warn("TypeError: result_name is not string")
+            logger.warn("[ExecHandler]: TypeError: result_name is not string")
             return
-
-        log.info("execute python code: %s" % python_code)
-        # before_exec = list(vars().keys())
-        # exec(python_code)
-        # after_exec = list(vars().keys())
-        # tmp_vars = list(filter(lambda x: not x.startswith("_"), set(after_exec) - set(before_exec)))
-        # self.write(json.dumps({"result": vars()[tmp_vars[0]]}))
+        logger.info("[ExecHandler]: execute python code: %s" % python_code)
         exec(python_code)
         self.write(json.dumps({"result": vars()[result_name]}))
-        log.info("executed")
+
+
+class RemoveHandler(tornado.web.RequestHandler):
+    def post(self):
+        dir_list = self.get_argument("directory_list")
+        dir_list = understand_data(dir_list)
+        if not isinstance(dir_list, list) and not all(map(lambda x: isinstance(x, str), dir_list)):
+            logger.warn("[RemoveHandler]: TypeError: not directory list")
+            return
+        for dir_path in dir_list:
+            logger.info("[RemoveHandler]: remove %s" % dir_path)
+            shutil.rmtree(dir_path)
+
+
+class MakeDirHandler(tornado.web.RequestHandler):
+    def post(self):
+        dir_list = self.get_argument("directory_list")
+        dir_list = understand_data(dir_list)
+        if not isinstance(dir_list, list) and not all(map(lambda x: isinstance(x, str), dir_list)):
+            logger.warn("[MakeDirHandler]: TypeError: not directory list")
+            return
+        for dir_path in dir_list:
+            if not os.path.exists(dir_path):
+                logger.info("[MakeDirHandler]: make %s" % dir_path)
+                os.makedirs(dir_path)
+
+
+class ListHandler(tornado.web.RequestHandler):
+    def post(self):
+        dir_list = self.get_argument("directory_list")
+        dir_list = understand_data(dir_list)
+        recursive = self.get_argument("recursive")
+        showdir = self.get_argument("showdir")
+        if not isinstance(dir_list, list) and not all(map(lambda x: isinstance(x, str), dir_list)):
+            logger.warn("[ListHandler]: TypeError: not directory list")
+            return
+        all_file_list = []
+        for dir_path in dir_list:
+            if os.path.exists(dir_path):
+                logger.info("[ListHandler]: scaning %s" % dir_path)
+                all_file_list += file_scan(dir_path, recursive, showdir)
+        self.write(json.dumps({"result": all_file_list}))
+
+
+class FilePointerGenHandler(tornado.web.RequestHandler):
+    def post(self):
+        file_list = self.get_argument("file_list")
+        file_list = understand_data(file_list)
+        bucket_size = int(self.get_argument("bucket_size"))
+        if not isinstance(file_list, list) and not all(map(os.path.exists, file_list)):
+            logger.warn("[FilePointerGenHandler]: TypeError: not file list or file not exist")
+            return
+        if bucket_size < 1:
+            logger.warn("[FilePointerGenHandler]: TypeError: bucket size is smaller than 1")
+            return
+        file_pointer_dict = {}
+        for file_path in file_list:
+            logger.info("[FilePointerGenHandler]: splitting %s" % file_path)
+            file_pointer_dict[file_path] = bucket_to_pointer(file_path, bucket_size)
+        self.write(json.dumps({"result": file_pointer_dict}))

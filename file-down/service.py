@@ -17,7 +17,11 @@ define("port", default=8000, help="run on the given port", type=int)
 
 Handlers = [(r"/wt", handler.WriteDownHandler),
             (r"/sd", handler.SendOutHandler),
-            (r"/ex", handler.ExecHandler)
+            (r"/ex", handler.ExecHandler),
+            (r"/rm", handler.RemoveHandler),
+            (r"/mk", handler.MakeDirHandler),
+            (r"/ls", handler.ListHandler),
+            (r"/fp", handler.FilePointerGenHandler),
             ]
 
 application = Application(

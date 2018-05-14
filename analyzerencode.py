@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from mynmt.analyzeutils import Token
-from mynmt.analyzeutils import SentTokenInfo
+from processutils.analyze import Token
+from processutils.analyze import SentTokenInfo
 import json
 import argparse
 

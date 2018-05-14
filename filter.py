@@ -9,7 +9,7 @@ parser.add_argument('-s', "--separator", default="\t")
 args = parser.parse_args()
 
 
-class Filter(object):
+class TextFilter(object):
     def __init__(self, sep):
         self.sep = sep
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     with open(file_path, "r", encoding="utf8") as f:
         data = f.readlines()
     # filter
-    line_filter = Filter(sep)
+    line_filter = TextFilter(sep)
     data = line_filter.replace_bad_sep(data, "\u0000")
     data = line_filter.tridots_filter(data)
     data = line_filter.clear_filter(data)

@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generator utilities test."""
+"""Generator utilities medicine.sample.txt."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -84,9 +84,9 @@ class GeneratorUtilsTest(tf.test.TestCase):
     tmp_dir = self.get_temp_dir()
     (_, tmp_file_path) = tempfile.mkstemp(dir=tmp_dir)
 
-    # Create a test zip file and unzip it.
+    # Create a medicine.sample.txt zip file and unzip it.
     with gzip.open(tmp_file_path + ".gz", "wb") as gz_file:
-      gz_file.write(bytes("test line", "utf-8"))
+      gz_file.write(bytes("medicine.sample.txt line", "utf-8"))
     generator_utils.gunzip_file(tmp_file_path + ".gz", tmp_file_path + ".txt")
 
     # Check that the unzipped result is as expected.
@@ -94,7 +94,7 @@ class GeneratorUtilsTest(tf.test.TestCase):
     for line in io.open(tmp_file_path + ".txt", "rb"):
       lines.append(line.decode("utf-8").strip())
     self.assertEqual(len(lines), 1)
-    self.assertEqual(lines[0], "test line")
+    self.assertEqual(lines[0], "medicine.sample.txt line")
 
     # Clean up.
     os.remove(tmp_file_path + ".gz")
@@ -103,23 +103,23 @@ class GeneratorUtilsTest(tf.test.TestCase):
 
   def testGetOrGenerateTxtVocab(self):
     data_dir = tempfile.mkdtemp(dir=self.get_temp_dir())
-    test_file = os.path.join(self.get_temp_dir(), "test.txt")
+    test_file = os.path.join(self.get_temp_dir(), "medicine.sample.txt.txt")
     with tf.gfile.Open(test_file, "w") as outfile:
       outfile.write("a b c\n")
       outfile.write("d e f\n")
-    # Create a vocab over the test file.
+    # Create a vocab over the medicine.sample.txt file.
     vocab1 = generator_utils.get_or_generate_txt_vocab(
-        data_dir, "test.voc", 20, test_file)
-    self.assertTrue(tf.gfile.Exists(os.path.join(data_dir, "test.voc")))
+        data_dir, "medicine.sample.txt.voc", 20, test_file)
+    self.assertTrue(tf.gfile.Exists(os.path.join(data_dir, "medicine.sample.txt.voc")))
     self.assertIsNotNone(vocab1)
 
-    # Append a new line to the test file which would change the vocab if
+    # Append a new line to the medicine.sample.txt file which would change the vocab if
     # the vocab were not being read from file.
     with tf.gfile.Open(test_file, "a") as outfile:
       outfile.write("g h i\n")
     vocab2 = generator_utils.get_or_generate_txt_vocab(
-        data_dir, "test.voc", 20, test_file)
-    self.assertTrue(tf.gfile.Exists(os.path.join(data_dir, "test.voc")))
+        data_dir, "medicine.sample.txt.voc", 20, test_file)
+    self.assertTrue(tf.gfile.Exists(os.path.join(data_dir, "medicine.sample.txt.voc")))
     self.assertIsNotNone(vocab2)
     self.assertEqual(vocab1.dump(), vocab2.dump())
 

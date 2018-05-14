@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,11 +26,13 @@ from __future__ import print_function
 
 import collections
 from itertools import chain
+import math
 import re
 import tempfile
 
 # Dependency imports
 
+import numpy as np
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 from tensor2tensor.data_generators import tokenizer
@@ -62,10 +64,10 @@ _ESCAPE_CHARS = set(u"\\_u;0123456789")
 if six.PY2:
 
   def native_to_unicode(s):
-    return s if isinstance(s, unicode) else s.decode("utf8")
+    return s if isinstance(s, unicode) else s.decode("utf-8")
 
   def unicode_to_native(s):
-    return s.encode("utf-8")
+    return s.encode("utf-8") if isinstance(s, unicode) else s
 else:  # No conversion required on Python >= 3.
 
   def native_to_unicode(s):
@@ -73,6 +75,11 @@ else:  # No conversion required on Python >= 3.
 
   def unicode_to_native(s):
     return s
+
+
+def to_unicode_ignore_errors(s):
+  return (unicode(s, "utf-8", errors="ignore")
+          if six.PY2 else s.decode("utf-8", "ignore"))
 
 
 class TextEncoder(object):
@@ -163,7 +170,7 @@ class ByteTextEncoder(TextEncoder):
         decoded_ids.append(int2byte(id_ - numres))
     if six.PY2:
       return "".join(decoded_ids)
-    # Python3: join byte arrays and then mydecode.sh string
+    # Python3: join byte arrays and then decode string
     return b"".join(decoded_ids).decode("utf-8", "replace")
 
   def decode_list(self, ids):
@@ -175,7 +182,7 @@ class ByteTextEncoder(TextEncoder):
         decoded_ids.append(RESERVED_TOKENS_BYTES[int(id_)])
       else:
         decoded_ids.append(int2byte(id_ - numres))
-    # Python3: join byte arrays and then mydecode.sh string
+    # Python3: join byte arrays and then decode string
     return decoded_ids
 
   @property
@@ -205,7 +212,12 @@ class ClassLabelEncoder(TextEncoder):
     if isinstance(label_id, list):
       assert len(label_id) == 1
       label_id, = label_id
+    if isinstance(label_id, np.ndarray):
+      label_id = np.squeeze(label_id)
     return self._class_labels[label_id]
+
+  def decode_list(self, ids):
+    return [self._class_labels[i] for i in ids]
 
   @property
   def vocab_size(self):
@@ -277,11 +289,12 @@ class TokenTextEncoder(TextEncoder):
     Args:
       filename: The file to load vocabulary from.
     """
+    with tf.gfile.Open(filename) as f:
+      tokens = [token.strip() for token in f.readlines()]
+
     def token_gen():
-      with tf.gfile.Open(filename) as f:
-        for line in f:
-          token = line.strip()
-          yield token
+      for token in tokens:
+        yield token
 
     self._init_vocab(token_gen(), add_reserved_tokens=False)
 
@@ -374,7 +387,7 @@ def _unescape_token(escaped_token):
     try:
       return six.unichr(int(m.group(1)))
     except (ValueError, OverflowError) as _:
-      return ""
+      return u"\u3013"  # Unicode for undefined character.
 
   trimmed = escaped_token[:-1] if escaped_token.endswith("_") else escaped_token
   return _UNESCAPE_REGEX.sub(match, trimmed)
@@ -389,7 +402,7 @@ class SubwordTextEncoder(TextEncoder):
   A SubwordTextEncoder is built from a corpus (so it is tailored to the text in
   the corpus), and stored to a file. See text_encoder_build_subword.py.
 
-  It can then be loaded and used to encode/mydecode.sh any text.
+  It can then be loaded and used to encode/decode any text.
 
   Encoding has four phases:
 
@@ -421,6 +434,7 @@ class SubwordTextEncoder(TextEncoder):
         vocab
     """
     self._alphabet = set()
+    self.filename = filename
     if filename is not None:
       self._load_from_file(filename)
     super(SubwordTextEncoder, self).__init__(num_reserved_ids=None)
@@ -569,6 +583,38 @@ class SubwordTextEncoder(TextEncoder):
         self._subtoken_string_to_id[subtoken]
         for subtoken in self._escaped_token_to_subtoken_strings(escaped_token)
     ]
+
+  @classmethod
+  def build_from_generator(cls,
+                           generator,
+                           target_vocab_size,
+                           max_subtoken_length=None,
+                           reserved_tokens=None):
+    """Builds a SubwordTextEncoder from the generated text.
+
+    Args:
+      generator: yields text.
+      target_vocab_size: int, approximate vocabulary size to create.
+      max_subtoken_length: Maximum length of a subtoken. If this is not set,
+        then the runtime and memory use of creating the vocab is quadratic in
+        the length of the longest token. If this is set, then it is instead
+        O(max_subtoken_length * length of longest token).
+      reserved_tokens: List of reserved tokens. The global variable
+        `RESERVED_TOKENS` must be a prefix of `reserved_tokens`. If this
+        argument is `None`, it will use `RESERVED_TOKENS`.
+
+    Returns:
+      SubwordTextEncoder with `vocab_size` approximately `target_vocab_size`.
+    """
+    token_counts = collections.defaultdict(int)
+    for item in generator:
+      for tok in tokenizer.encode(native_to_unicode(item)):
+        token_counts[tok] += 1
+    encoder = cls.build_to_target_size(
+        target_vocab_size, token_counts, 1, 1e3,
+        max_subtoken_length=max_subtoken_length,
+        reserved_tokens=reserved_tokens)
+    return encoder
 
   @classmethod
   def build_to_target_size(cls,
@@ -821,11 +867,9 @@ class SubwordTextEncoder(TextEncoder):
     self._init_alphabet_from_tokens(subtoken_strings)
 
   def _load_from_file(self, filename):
-    """Load from a file.
-
-    Args:
-      filename: Filename to load vocabulary from
-    """
+    """Load from a vocab file."""
+    if not tf.gfile.Exists(filename):
+      raise ValueError("File %s not found" % filename)
     with tf.gfile.Open(filename) as f:
       self._load_from_file_object(f)
 
@@ -841,7 +885,7 @@ class SubwordTextEncoder(TextEncoder):
 class ImageEncoder(object):
   """Encoder class for saving and loading images."""
 
-  def __init__(self, num_reserved_ids=0, height=32, width=32, channels=3):
+  def __init__(self, num_reserved_ids=0, height=None, width=None, channels=3):
     assert num_reserved_ids == 0
     self._height = height
     self._width = width
@@ -880,8 +924,13 @@ class ImageEncoder(object):
     Raises:
       ValueError: if the ids are not of the appropriate size.
     """
-    _, tmp_file_path = tempfile.mkstemp()
-    length = self._height * self._width * self._channels
+    _, tmp_file_path = tempfile.mkstemp("_decode.png")
+    if self._height is None or self._width is None:
+      size = int(math.sqrt(len(ids) / self._channels))
+      length = size * size * self._channels
+    else:
+      size = None
+      length = self._height * self._width * self._channels
     if len(ids) != length:
       raise ValueError("Length of ids (%d) must be height (%d) x width (%d) x "
                        "channels (%d); %d != %d.\n Ids: %s"
@@ -889,7 +938,10 @@ class ImageEncoder(object):
                           len(ids), length, " ".join([str(i) for i in ids])))
     with tf.Graph().as_default():
       raw = tf.constant(ids, dtype=tf.uint8)
-      img = tf.reshape(raw, [self._height, self._width, self._channels])
+      if size is None:
+        img = tf.reshape(raw, [self._height, self._width, self._channels])
+      else:
+        img = tf.reshape(raw, [size, size, self._channels])
       png = tf.image.encode_png(img)
       op = tf.write_file(tmp_file_path, png)
       with tf.Session() as sess:

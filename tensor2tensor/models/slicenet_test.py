@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from __future__ import print_function
 
 import numpy as np
 
-from tensor2tensor.data_generators import image  # pylint: disable=unused-import
+from tensor2tensor.data_generators import cifar  # pylint: disable=unused-import
 from tensor2tensor.layers import modalities  # pylint: disable=unused-import
 from tensor2tensor.models import slicenet
 from tensor2tensor.utils import registry

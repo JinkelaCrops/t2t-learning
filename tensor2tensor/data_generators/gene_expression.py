@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ Requires the h5py library.
 
 File format expected:
   * h5 file
-  * h5 datasets should include {train, valid, test}_{in, na, out}, which will
-    map to inputs, targets mask, and targets for the train, dev, and test
+  * h5 datasets should include {train, valid, medicine.sample.txt}_{in, na, out}, which will
+    map to inputs, targets mask, and targets for the train, dev, and medicine.sample.txt
     datasets.
   * Each record in *_in is a bool 2-D numpy array with one-hot encoded base
     pairs with shape [num_input_timesteps, 4]. The base order is ACTG.
@@ -112,7 +112,7 @@ class GeneExpressionProblem(problem.Problem):
     datasets = [(self.training_filepaths, self.num_shards, "train",
                  num_train_examples), (self.dev_filepaths, 10, "valid",
                                        num_dev_examples),
-                (self.test_filepaths, 10, "test", num_test_examples)]
+                (self.test_filepaths, 10, "medicine.sample.txt", num_test_examples)]
     for fname_fn, nshards, key_prefix, num_examples in datasets:
       outfiles = fname_fn(data_dir, nshards, shuffled=False)
       all_filepaths.extend(outfiles)
@@ -124,7 +124,7 @@ class GeneExpressionProblem(problem.Problem):
                   start_idx, end_idx))
         processes.append(p)
 
-    # 1 per training shard + 10 for dev + 10 for test
+    # 1 per training shard + 10 for dev + 10 for medicine.sample.txt
     assert len(processes) == self.num_shards + 20
 
     # Start and wait for processes in batches

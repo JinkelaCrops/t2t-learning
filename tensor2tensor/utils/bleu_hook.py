@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ def bleu_score(predictions, labels, **unused_kwargs):
   """BLEU score computation between labels and predictions.
 
   An approximate BLEU scoring method since we do not glue word pieces or
-  mydecode.sh the ids and tokenize the output. By default, we use ngram order of 4
+  decode the ids and tokenize the output. By default, we use ngram order of 4
   and use brevity penalty. Also, this does not have beam search.
 
   Args:
@@ -159,6 +159,9 @@ class UnicodeRegex(object):
                    if unicodedata.category(six.unichr(x)).startswith(prefix))
 
 
+uregex = UnicodeRegex()
+
+
 def bleu_tokenize(string):
   r"""Tokenize a string following the official BLEU implementation.
 
@@ -170,7 +173,7 @@ def bleu_tokenize(string):
   except when a punctuation is preceded and followed by a digit
   (e.g. a comma/dot as a thousand/decimal separator).
 
-  Note that a numer (e.g. a year) followed by a dot at the end of sentence
+  Note that a number (e.g. a year) followed by a dot at the end of sentence
   is NOT tokenized,
   i.e. the dot stays with the number because `s/(\p{P})(\P{N})/ $1 $2/g`
   does not match this case (unless we add a space after each sentence).
@@ -183,7 +186,6 @@ def bleu_tokenize(string):
   Returns:
     a list of tokens
   """
-  uregex = UnicodeRegex()
   string = uregex.nondigit_punct_re.sub(r"\1 \2 ", string)
   string = uregex.punct_nondigit_re.sub(r" \1 \2", string)
   string = uregex.symbol_re.sub(r" \1 ", string)
@@ -206,10 +208,37 @@ def bleu_wrapper(ref_filename, hyp_filename, case_sensitive=False):
 StepFile = collections.namedtuple("StepFile", "filename mtime ctime steps")
 
 
+def _try_twice_tf_glob(pattern):
+  """Glob twice, first time possibly catching `NotFoundError`.
+
+  tf.gfile.Glob may crash with
+
+  ```
+  tensorflow.python.framework.errors_impl.NotFoundError:
+  xy/model.ckpt-1130761_temp_9cb4cb0b0f5f4382b5ea947aadfb7a40;
+  No such file or directory
+  ```
+
+  Standard glob.glob does not have this bug, but does not handle multiple
+  filesystems (e.g. `gs://`), so we call tf.gfile.Glob, the first time possibly
+  catching the `NotFoundError`.
+
+  Args:
+    pattern: str, glob pattern.
+
+  Returns:
+    list<str> matching filepaths.
+  """
+  try:
+    return tf.gfile.Glob(pattern)
+  except tf.errors.NotFoundError:
+    return tf.gfile.Glob(pattern)
+
+
 def _read_stepfiles_list(path_prefix, path_suffix=".index", min_steps=0):
   """Return list of StepFiles sorted by step from files at path_prefix."""
   stepfiles = []
-  for filename in tf.gfile.Glob(path_prefix + "*-[0-9]*" + path_suffix):
+  for filename in _try_twice_tf_glob(path_prefix + "*-[0-9]*" + path_suffix):
     basename = filename[:-len(path_suffix)] if len(path_suffix) else filename
     try:
       steps = int(basename.rsplit("-")[-1])

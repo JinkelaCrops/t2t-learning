@@ -3,7 +3,7 @@ import logging
 
 
 # 简易日志脚本
-class Logger():
+class Logger:
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     def __init__(self, loggername, logpath=None):
@@ -13,8 +13,8 @@ class Logger():
         self.logger.setLevel(logging.DEBUG)
 
     def add_fh(self):
-        if self.logpath == None:
-            raise 'logpath is None'
+        if self.logpath is None:
+            raise Exception('logpath is None')
         else:
             fh = logging.FileHandler(self.logpath)
             fh.setLevel(logging.DEBUG)

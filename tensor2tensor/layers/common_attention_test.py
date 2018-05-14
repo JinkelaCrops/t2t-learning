@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ class CommonAttentionTest(tf.test.TestCase):
     self.assertAllClose(dx, dx_f)
 
   def test2dGatherAndScatterInvertibility(self):
-    """2d gather and scatter invertibility test."""
+    """2d gather and scatter invertibility medicine.sample.txt."""
     batch_size = 2
     num_heads = 2
     height = 4

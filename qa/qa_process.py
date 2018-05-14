@@ -35,10 +35,10 @@ def compare_get_words(src, tgt):
 
 
 # prefix = '/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449'
-# with open(f"{prefix}/t2t_med/mynmt/data/test/test.zh", "r", encoding="utf8") as f:
+# with open(f"{prefix}/t2t_med/mynmt/data/medicine.sample.txt/medicine.sample.txt.zh", "r", encoding="utf8") as f:
 #     src_lines = [x.strip() for x in f.readlines()]
 #
-# with open(f"{prefix}/t2t_med/mynmt/data/test/test.en", "r", encoding="utf8") as f:
+# with open(f"{prefix}/t2t_med/mynmt/data/medicine.sample.txt/medicine.sample.txt.en", "r", encoding="utf8") as f:
 #     tgt_lines = [x.strip() for x in f.readlines()]
 #
 # output_src_lines = []
@@ -50,18 +50,18 @@ def compare_get_words(src, tgt):
 #     if k % 10 == 10 - 1:
 #         print("processing %s" % (k + 1))
 #
-# with open(f"{prefix}/t2t_med/mynmt/data/test/test.zh.tag", "w", encoding="utf8") as f:
+# with open(f"{prefix}/t2t_med/mynmt/data/medicine.sample.txt/medicine.sample.txt.zh.tag", "w", encoding="utf8") as f:
 #     f.writelines(output_src_lines)
 #
-# with open(f"{prefix}/t2t_med/mynmt/data/test/test.en.tag", "w", encoding="utf8") as f:
+# with open(f"{prefix}/t2t_med/mynmt/data/medicine.sample.txt/medicine.sample.txt.en.tag", "w", encoding="utf8") as f:
 #     f.writelines(output_tgt_lines)
 
 
 prefix = '/media/tmxmall/a36811aa-0e87-4ba1-b14f-370134452449'
-with open(f"{prefix}/t2t_med/mynmt/data/test/test.zh", "r", encoding="utf8") as f:
+with open(f"{prefix}/t2t_med/mynmt/data/medicine.sample.txt/medicine.sample.txt.zh", "r", encoding="utf8") as f:
     src_lines = [x.strip() for x in f.readlines()]
 
-with open(f"{prefix}/t2t_med/mynmt/data/test/test.en", "r", encoding="utf8") as f:
+with open(f"{prefix}/t2t_med/mynmt/data/medicine.sample.txt/medicine.sample.txt.en", "r", encoding="utf8") as f:
     tgt_lines = [x.strip() for x in f.readlines()]
 
 output_words = []

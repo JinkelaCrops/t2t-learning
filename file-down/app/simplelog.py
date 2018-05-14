@@ -3,18 +3,18 @@ import logging
 
 
 # 简易日志脚本
-class Logger():
+class Logger(object):
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
-    def __init__(self,loggername,logpath=None):
+
+    def __init__(self, loggername, logpath=None):
         self.loggername = loggername
         self.logpath = logpath
         self.logger = logging.getLogger(loggername)
         self.logger.setLevel(logging.DEBUG)
 
     def add_fh(self):
-        if self.logpath == None:
-            raise 'logpath is None'
+        if self.logpath is None:
+            raise Exception('logpath is None')
         else:
             fh = logging.FileHandler(self.logpath)
             fh.setLevel(logging.DEBUG)
@@ -27,7 +27,7 @@ class Logger():
         ch.setFormatter(self.formatter)
         self.logger.addHandler(ch)
 
-    def log(self,log_type=None):
+    def log(self, log_type=None):
         if log_type == 'F':
             self.add_fh()
         elif log_type == 'C':
@@ -37,12 +37,12 @@ class Logger():
             self.add_fh()
         return self.logger
 
+
 # other class
 class ClassName(object):
     """docstring for ClassName"""
+
     def __init__(self, arg):
         super(ClassName, self).__init__()
         self.arg = arg
-        pass 
-
-
+        pass
