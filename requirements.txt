@@ -1,8 +1,0 @@
-tensorflow-gpu
-tensorboard
-pandas
-numpy
-tornado
-requests
-nltk
-jieba
