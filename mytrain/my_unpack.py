@@ -7,11 +7,11 @@ parser = argparse.ArgumentParser(description="my_unpack")
 parser.add_argument('-f', "--file_prefix", required=True)
 parser.add_argument('-sep', "--separator", required=True)
 
-args = parser.parse_args([
-    "-f", "../test/medicine.sample.data/data.test",
-    "-sep", ' ||| '
-])
-# args = parser.parse_args()
+# args = parser.parse_args([
+#     "-f", "../test/medicine.sample.data/data.test",
+#     "-sep", ' ||| '
+# ])
+args = parser.parse_args()
 args.output_src = args.file_prefix + ".src"
 args.output_tgt = args.file_prefix + ".tgt"
 log = Logger("my_filter", "my_filter.log").log()
