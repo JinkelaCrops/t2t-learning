@@ -10,6 +10,7 @@ MODEL_DIR = f"{HOME_PATH}/t2t_train/new_medicine_new/{PROBLEM_NAME}/{MODEL_NAME}
 BATCH_SIZE = 1
 GPU_DEVICE = "0"
 GPU_MEM_FRAC = 0.5
+GPU_MEM_GROWTH = True
 
 SRC_LAN = "zh"
 TGT_LAN = "en"

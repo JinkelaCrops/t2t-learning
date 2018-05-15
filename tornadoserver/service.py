@@ -13,7 +13,7 @@ from tornado.options import define, options
 
 from tornadoserver.app import handler
 
-define("port", default=8000, help="run on the given port", type=int)
+define("port", default=8001, help="run on the given port", type=int)
 
 Handlers = [(r"/trans", handler.Translate)]
 

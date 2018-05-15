@@ -5,7 +5,7 @@ from processutils.analyze import translate_afterprocess
 from processutils.segment import SegmentJieba
 from processutils.segment import SegmentNLTK
 from processutils.segment import segment_afterprocess
-from mynmt.my_t2t_decoder import SessFieldPredict
+from mynmt.my_t2t_decoder import SessPredictField
 from mynmt.my_t2t_decoder import decode
 import mynmt.my_config as config
 import re
@@ -22,7 +22,7 @@ parser.add_argument("--report", default=10000, type=int)
 parser.add_argument("--truncate", default=1E10, type=int)
 
 args = parser.parse_args([
-    "--file_path", "../medicine.sample.txt/medicine.sample.txt.zh",
+    "--file_path", "../test/medicine.sample.data/data.test.src",
     "--src_lan", "zh",
     "--tgt_lan", "en",
     "--truncate", "500"
@@ -40,7 +40,7 @@ target_file_name = file_name + "." + tgt_lan + ".translate"
 tokens = Token()
 trans_after_regex = "(" + "|".join(tokens.get_token_name) + ")"
 
-sess_field = SessFieldPredict(config)
+sess_field = SessPredictField(config)
 
 
 class Field(object):
@@ -94,7 +94,8 @@ def after_translate(fields: list):
             fields[i].tgt_encode_seg_translate_decode = sub_sent(fields[i].tgt_encode_seg_translate,
                                                                  fields[i].src_encode_dict)
         except Exception as e:
-            logger.warn(f"translate decode error: {e.__class__}, {e.__context__}, ### {line.strip()}")
+            logger.warn(f"translate decode error: {e.__class__}, {e.__context__}, "
+                        f"### {fields[i].tgt_encode_seg_translate.strip()}")
         fields[i].backup_decode()
 
         # translate afterprocess

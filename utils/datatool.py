@@ -72,5 +72,5 @@ class RemoteIO(object):
         payload = {
             "args": json.dumps(args)
         }
-        res = requests.post(url="http://%s:8000/trans" % self.host, data=payload)
+        res = requests.post(url="http://%s:8001/trans" % self.host, data=payload)
         return res.json()["result"]

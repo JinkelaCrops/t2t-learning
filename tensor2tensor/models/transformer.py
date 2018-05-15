@@ -225,13 +225,6 @@ class Transformer(t2t_model.T2TModel):
                   None if using greedy decoding (beam_size=1)
           }
         """
-        if self._hparams.self_attention_type != "dot_product":
-            # Caching is not guaranteed to work with attention types other than
-            # dot_product.
-            # TODO(petershaw): Support fast decoding when using relative
-            # position representations, i.e. "dot_product_relative" attention.
-            return self._beam_decode_slow(features, decode_length, beam_size,
-                                          top_beams, alpha)
         with tf.variable_scope(self.name):
             return self._fast_decode(
                 features, decode_length, beam_size, top_beams, alpha)
@@ -305,10 +298,7 @@ class Transformer(t2t_model.T2TModel):
             # We force the outputs to begin with these sequences.
             encoder_output = None
             encoder_decoder_attention_bias = None
-            if len(features["inputs"].shape) >= 4:
-                partial_targets = tf.squeeze(tf.to_int64(features["inputs"]), [2, 3])
-            else:
-                partial_targets = tf.squeeze(tf.to_int64(features["inputs"]), [2])
+            partial_targets = tf.squeeze(tf.to_int64(features["inputs"]), [2, 3])
             partial_targets_length = common_layers.shape_list(partial_targets)[1]
             decode_length += partial_targets_length
             batch_size = tf.shape(partial_targets)[0]
@@ -399,10 +389,7 @@ class Transformer(t2t_model.T2TModel):
             alpha=alpha,
             batch_size=batch_size)
         if partial_targets is not None:
-            if beam_size <= 1:
-                ret["outputs"] = ret["outputs"][:, partial_targets_length:]
-            else:
-                ret["outputs"] = ret["outputs"][:, :, partial_targets_length:]
+            ret["outputs"] = ret["outputs"][:, partial_targets_length:]
         return ret
 
 
@@ -593,12 +580,7 @@ def transformer_prepare_encoder(inputs, target_space, hparams, features=None):
             common_layers.shape_list(inputs)[1])
     # Append target_space_id embedding to inputs.
     emb_target_space = common_layers.embedding(
-        target_space,
-        32,
-        ishape_static[-1],
-        name="target_space_embedding",
-        dtype=tf.bfloat16
-        if hparams.activation_dtype == "bfloat16" else tf.float32)
+        target_space, 32, ishape_static[-1], name="target_space_embedding")
     emb_target_space = tf.reshape(emb_target_space, [1, 1, -1])
     encoder_input += emb_target_space
     if hparams.pos == "timing":
@@ -607,11 +589,6 @@ def transformer_prepare_encoder(inputs, target_space, hparams, features=None):
                 encoder_input, inputs_position)
         else:
             encoder_input = common_attention.add_timing_signal_1d(encoder_input)
-    if hparams.activation_dtype == "bfloat16":
-        encoder_self_attention_bias = tf.cast(encoder_self_attention_bias,
-                                              tf.bfloat16)
-        encoder_decoder_attention_bias = tf.cast(encoder_decoder_attention_bias,
-                                                 tf.bfloat16)
     return (encoder_input, encoder_self_attention_bias,
             encoder_decoder_attention_bias)
 
@@ -656,9 +633,6 @@ def transformer_prepare_decoder(targets, hparams, features=None):
                 decoder_input, targets_position)
         else:
             decoder_input = common_attention.add_timing_signal_1d(decoder_input)
-    if hparams.activation_dtype == "bfloat16":
-        decoder_self_attention_bias = tf.cast(decoder_self_attention_bias,
-                                              tf.bfloat16)
     return (decoder_input, decoder_self_attention_bias)
 
 
@@ -729,7 +703,7 @@ def transformer_encoder(encoder_input,
                         common_layers.layer_preprocess(x, hparams), hparams, pad_remover,
                         conv_padding="SAME", nonpadding_mask=nonpadding)
                     x = common_layers.layer_postprocess(x, y, hparams)
-        # if normalization is done in layer_preprocess, then it should also be done
+        # if normalization is done in layer_preprocess, then it shuold also be done
         # on the output, since the output can grow very large, being the sum of
         # a whole stack of unnormalized layer outputs.
         return common_layers.layer_preprocess(x, hparams)
@@ -819,7 +793,7 @@ def transformer_decoder(decoder_input,
                         common_layers.layer_preprocess(x, hparams), hparams,
                         conv_padding="LEFT", nonpadding_mask=nonpadding)
                     x = common_layers.layer_postprocess(x, y, hparams)
-        # if normalization is done in layer_preprocess, then it should also be done
+        # if normalization is done in layer_preprocess, then it shuold also be done
         # on the output, since the output can grow very large, being the sum of
         # a whole stack of unnormalized layer outputs.
         return common_layers.layer_preprocess(x, hparams)
@@ -1505,42 +1479,6 @@ def transformer_supervised_attention():
 
 
 @registry.register_hparams
-def transformer_big_batch_size_2048():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_big()
-    hparams.batch_size = 2048
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_big_batch_size_1024():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_big()
-    hparams.batch_size = 1024
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_big_single_gpu_batch_size_2048():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_big_single_gpu()
-    hparams.batch_size = 2048
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_big_single_gpu_batch_size_1024():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_big_single_gpu()
-    hparams.batch_size = 1024
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
 def transformer_big_single_gpu_batch_size():
     """HParams for transfomer big model on WMT."""
     hparams = transformer_big_single_gpu()
@@ -1551,80 +1489,10 @@ def transformer_big_single_gpu_batch_size():
 
 
 @registry.register_hparams
-def transformer_big_single_gpu_batch_size_dropout_02():
+def transformer_big_single_gpu_batch_size_1600():
     """HParams for transfomer big model on WMT."""
     hparams = transformer_big_single_gpu()
     hparams.batch_size = 1600
-    hparams.relu_dropout = 0.2
-    hparams.attention_dropout = 0.2
-    hparams.layer_prepostprocess_dropout = 0.2
     # small vocab 30000: 1600 for single gpu
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_big_single_gpu_batch_size_lr_03():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_big_single_gpu()
-    hparams.batch_size = 1100
-    hparams.learning_rate = 0.3
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_big_single_gpu_batch_size_warmup_24000():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_big_single_gpu()
-    hparams.batch_size = 1100
-    hparams.learning_rate_warmup_steps = 24000
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_big_single_gpu_batch_size_warmup_35000_lr_03():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_big_single_gpu()
-    hparams.batch_size = 1100
-    hparams.learning_rate = 0.3
-    hparams.learning_rate_warmup_steps = 35000
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_base_single_gpu_batch_size_8192():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_base_single_gpu()
-    hparams.batch_size = 8192
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_base_single_gpu_batch_size_4096():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_base_single_gpu()
-    hparams.batch_size = 4096
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_base_single_gpu_batch_size_2048():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_base_single_gpu()
-    hparams.batch_size = 2048
-    hparams.symbol_modality_num_shards = 1
-    return hparams
-
-
-@registry.register_hparams
-def transformer_base_single_gpu_batch_size_1024():
-    """HParams for transfomer big model on WMT."""
-    hparams = transformer_base_single_gpu()
-    hparams.batch_size = 1024
     hparams.symbol_modality_num_shards = 1
     return hparams

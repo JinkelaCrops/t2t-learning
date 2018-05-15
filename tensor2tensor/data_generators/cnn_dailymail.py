@@ -70,7 +70,7 @@ def _maybe_download_corpora(tmp_dir, is_training):
 
   Returns:
     List of all files generated and path to file containing
-      train/dev/medicine.sample.txt split info.
+      train/dev/test split info.
   """
   cnn_filename = "cnn_stories.tgz"
   cnn_finalpath = os.path.join(tmp_dir, "cnn/stories/")
@@ -198,7 +198,7 @@ def write_raw_text_to_files(all_files, urls_path, tmp_dir, is_training):
   if not is_training:
     test_urls_path = generator_utils.maybe_download(tmp_dir, "all_test.txt",
                                                     _TEST_URLS)
-    filename = "cnndm.medicine.sample.txt"
+    filename = "cnndm.test"
     tf.logging.info("Writing %s" % filename)
     write_to_file(all_files, test_urls_path, tmp_dir, filename)
 

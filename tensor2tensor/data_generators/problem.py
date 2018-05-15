@@ -33,7 +33,7 @@ import tensorflow as tf
 class DatasetSplit(object):
   TRAIN = tf.estimator.ModeKeys.TRAIN
   EVAL = tf.estimator.ModeKeys.EVAL
-  TEST = "medicine.sample.txt"
+  TEST = "test"
 
 
 class SpaceID(object):
@@ -350,7 +350,7 @@ class Problem(object):
     Matches mode to a suffix.
     * DatasetSplit.TRAIN: train
     * DatasetSplit.EVAL: dev
-    * DatasetSplit.TEST: medicine.sample.txt
+    * DatasetSplit.TEST: test
     * tf.estimator.ModeKeys.PREDICT: dev
 
     Args:
@@ -369,7 +369,7 @@ class Problem(object):
       suffix = "dev"
     else:
       assert mode == DatasetSplit.TEST
-      suffix = "medicine.sample.txt"
+      suffix = "test"
 
     return "%s-%s%s*" % (path, suffix, shard_str)
 
@@ -448,11 +448,6 @@ class Problem(object):
         "targets_position" not in feature_map):
       feature_map["targets_position"] = feature_map["inputs_position"]
 
-  def maybe_reverse_and_copy(self, example):
-    self.maybe_reverse_features(example)
-    self.maybe_copy_features(example)
-    return example
-
   def dataset(self,
               mode,
               data_dir=None,
@@ -481,7 +476,7 @@ class Problem(object):
       preprocess: bool, whether to map the Dataset through
         Problem.preprocess_example.
       dataset_split: DatasetSplit, which split to read data
-        from (TRAIN:"-train", EVAL:"-dev", "medicine.sample.txt":"-medicine.sample.txt"). Defaults to mode.
+        from (TRAIN:"-train", EVAL:"-dev", "test":"-test"). Defaults to mode.
       shard: int, if provided, will only read data from the specified shard.
       partition_id: integer - which partition of the dataset to read from
       num_partitions: how many partitions in the dataset
@@ -524,6 +519,11 @@ class Problem(object):
         examples = tf.data.Dataset.from_tensors(examples)
       return examples
 
+    def _maybe_reverse_and_copy(example):
+      self.maybe_reverse_features(example)
+      self.maybe_copy_features(example)
+      return example
+
     if len(data_files) < num_partitions:
       raise ValueError(
           "number of data files (%d) must be at least the number of hosts (%d)"
@@ -554,7 +554,7 @@ class Problem(object):
         dataset = dataset.interleave(_preprocess, cycle_length=8,
                                      block_length=16)
     dataset = dataset.map(
-        self.maybe_reverse_and_copy, num_parallel_calls=num_threads)
+        _maybe_reverse_and_copy, num_parallel_calls=num_threads)
 
     if output_buffer_size:
       dataset = dataset.prefetch(output_buffer_size)
@@ -564,9 +564,6 @@ class Problem(object):
   def decode_example(self, serialized_example):
     """Return a dict of Tensors from a serialized tensorflow.Example."""
     data_fields, data_items_to_decoders = self.example_reading_spec()
-    # Necessary to rejoin examples in the correct order with the Cloud ML Engine
-    # batch prediction API.
-    data_fields["batch_prediction_key"] = tf.FixedLenFeature([1], tf.int64, 0)
     if data_items_to_decoders is None:
       data_items_to_decoders = {
           field: tf.contrib.slim.tfexample_decoder.Tensor(field)
@@ -841,7 +838,6 @@ class Problem(object):
     dataset = tf.data.Dataset.from_tensor_slices(serialized_example)
     dataset = dataset.map(self.decode_example)
     dataset = dataset.map(lambda ex: self.preprocess_example(ex, mode, hparams))
-    dataset = dataset.map(self.maybe_reverse_and_copy)
     dataset = dataset.map(data_reader.cast_int64_to_int32)
     dataset = dataset.padded_batch(1000, dataset.output_shapes)
     dataset = dataset.map(standardize_shapes)
@@ -938,11 +934,11 @@ def _default_hparams():
   return tf.contrib.training.HParams(
       # Use this parameter to get comparable perplexity numbers with different
       # tokenizations.  This value should be set to the ratio of the number of
-      # tokens in the medicine.sample.txt set according to the tokenization used to the number
-      # of tokens in the medicine.sample.txt set in the "official" tokenization.  For
+      # tokens in the test set according to the tokenization used to the number
+      # of tokens in the test set in the "official" tokenization.  For
       # example, if we are using a word-piece based model and we want to
       # compute per-word perplexity, then we set loss_multiplier to the number
-      # of wordpieces per word in the medicine.sample.txt set.
+      # of wordpieces per word in the test set.
       loss_multiplier=1.0,
 
       # Use this parameter to allow for larger sequences in the batch. Without

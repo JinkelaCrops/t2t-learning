@@ -163,7 +163,7 @@ class CommonAttentionTest(tf.test.TestCase):
     self.assertAllClose(dx, dx_f)
 
   def test2dGatherAndScatterInvertibility(self):
-    """2d gather and scatter invertibility medicine.sample.txt."""
+    """2d gather and scatter invertibility test."""
     batch_size = 2
     num_heads = 2
     height = 4

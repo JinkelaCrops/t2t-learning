@@ -92,6 +92,7 @@ class T2TModel(base.Layer):
 
     if not problem_hparams and hasattr(hparams, "problems"):
       problem_hparams = hparams.problems[0]
+    print(problem_hparams)
     self._problem_hparams = problem_hparams
 
     # Setup hparams
@@ -130,9 +131,6 @@ class T2TModel(base.Layer):
       return True
 
   def call(self, features):
-    tf.get_variable_scope().set_custom_getter(common_layers.bfloat16_var_getter
-                                              if self.hparams.activation_dtype
-                                              == "bfloat16" else None)
     tf.get_variable_scope().set_initializer(
         optimize.get_variable_initializer(self.hparams))
     with self._eager_var_store.as_default():
@@ -185,9 +183,6 @@ class T2TModel(base.Layer):
         else:
           sharded_logits = dp(self.top, body_out, datashard_to_features)
           sharded_losses = dp(self.loss, sharded_logits, datashard_to_features)
-          if isinstance(sharded_losses, tuple):
-            nums, dens = sharded_losses
-            sharded_losses = zip(nums, dens)
           training_loss_dict = average_sharded_losses([{
               "training": loss
           } for loss in sharded_losses])
@@ -219,11 +214,6 @@ class T2TModel(base.Layer):
   def model_fn(self, features):
     transformed_features = self.bottom(features)
 
-    if self.hparams.activation_dtype == "bfloat16":
-      for k, v in six.iteritems(transformed_features):
-        if v.dtype == tf.float32:
-          transformed_features[k] = tf.cast(v, tf.bfloat16)
-
     with tf.variable_scope("body"):
       log_info("Building model body")
       body_out = self.body(transformed_features)
@@ -236,7 +226,6 @@ class T2TModel(base.Layer):
     else:
       logits = self.top(output, features)
       losses["training"] = self.loss(logits, features)
-
     return logits, losses
 
   def bottom(self, features):
@@ -262,6 +251,7 @@ class T2TModel(base.Layer):
       all_previous_modalities.append(input_modality.name)
 
     # Transform the targets (for autoregressive models)
+    print(self._problem_hparams)
     target_modality = self._problem_hparams.target_modality
     if isinstance(target_modality, dict):
       for k, v in six.iteritems(target_modality):
@@ -353,10 +343,6 @@ class T2TModel(base.Layer):
       return self._top_single(body_output, target_modality, features)
 
   def _loss_single(self, logits, target_modality, features):
-    # The current bfloat16 version still uses float32 for most parts of backward
-    # propagation to keep model quality, so cast back before computing the loss
-    # value.
-    logits = tf.cast(logits, tf.float32)
     if not target_modality:
       log_warn(_no_problem_err("loss"))
       return (tf.constant(0., dtype=tf.float32),
@@ -847,8 +833,10 @@ class T2TModel(base.Layer):
         v_shape = [1]
       if v_shape == [1]:
         v = tf.tile(v, [self._num_datashards])
-      sharded_features[k] = self._data_parallelism(
-          tf.identity, tf.split(v, self._num_datashards, 0))
+      sharded_features[k] = self._data_parallelism(tf.identity,
+                                                   tf.split(
+                                                       v, self._num_datashards,
+                                                       0))
     return sharded_features
 
   def _to_features_per_datashard(self, features):
@@ -984,13 +972,9 @@ class T2TModel(base.Layer):
     train_op = self.optimize(loss, num_async_replicas=num_async_replicas)
 
     if common_layers.is_on_tpu():
-      host_call = _create_host_call(self.hparams.model_dir)
-      _remove_summaries()
+      _remove_summaries()  # summaries not currently working on TPU
       return tf.contrib.tpu.TPUEstimatorSpec(
-          tf.estimator.ModeKeys.TRAIN,
-          loss=loss,
-          train_op=train_op,
-          host_call=host_call)
+          tf.estimator.ModeKeys.TRAIN, loss=loss, train_op=train_op)
     else:
       return tf.estimator.EstimatorSpec(
           tf.estimator.ModeKeys.TRAIN, loss=loss, train_op=train_op)
@@ -1028,17 +1012,18 @@ class T2TModel(base.Layer):
           # the key is located in the center of metric_name: "metrics-%s/%s/%s"
           k = metric_name.split("/")[1]
           eval_metrics[metric_name] = metric_fn(logits[k], features)
+          return tf.estimator.EstimatorSpec(
+              tf.estimator.ModeKeys.EVAL,
+              predictions=logits,
+              eval_metric_ops=eval_metrics,
+              loss=loss)
         else:
           eval_metrics[metric_name] = metric_fn(logits, features)
-      if isinstance(logits, dict):
-        predictions = logits
-      else:
-        predictions = {"predictions": logits}
-      return tf.estimator.EstimatorSpec(
-          tf.estimator.ModeKeys.EVAL,
-          predictions=predictions,
-          eval_metric_ops=eval_metrics,
-          loss=loss)
+          return tf.estimator.EstimatorSpec(
+              tf.estimator.ModeKeys.EVAL,
+              predictions={"predictions": logits},
+              eval_metric_ops=eval_metrics,
+              loss=loss)
 
   def estimator_spec_predict(self, features):
     """Construct EstimatorSpec for PREDICT mode."""
@@ -1066,7 +1051,6 @@ class T2TModel(base.Layer):
         "inputs": features.get("inputs"),
         "targets": features.get("infer_targets"),
         "problem_choice": batched_problem_choice,
-        "batch_prediction_key": features.get("batch_prediction_key"),
     }
     _del_dict_nones(predictions)
 
@@ -1074,20 +1058,13 @@ class T2TModel(base.Layer):
     if "scores" in predictions:
       export_out["scores"] = predictions["scores"]
 
-    # Necessary to rejoin examples in the correct order with the Cloud ML Engine
-    # batch prediction API.
-    if "batch_prediction_key" in predictions:
-      export_out["batch_prediction_key"] = predictions["batch_prediction_key"]
-
     _remove_summaries()
 
     return tf.estimator.EstimatorSpec(
         tf.estimator.ModeKeys.PREDICT,
         predictions=predictions,
         export_outputs={
-            tf.saved_model.signature_constants.
-            DEFAULT_SERVING_SIGNATURE_DEF_KEY:
-                tf.estimator.export.PredictOutput(export_out)
+            "output": tf.estimator.export.PredictOutput(export_out)
         })
 
   def _normalize_body_output(self, body_out):
@@ -1106,10 +1083,9 @@ def _warn_changed_modality_type(new_name, old_name, feature_name):
   new_type, new_name = registry.parse_modality_name(new_name)
   old_type, old_name = registry.parse_modality_name(old_name)
   if new_type != old_type:
-    log_warn(
-        "%s has a designated modality type %s (%s) but has been "
-        "overridden with a modality of type %s (%s).", feature_name, old_type,
-        old_name, new_type, new_name)
+    log_warn("%s has a designated modality type %s (%s) but has been "
+             "overridden with a modality of type %s (%s).", feature_name,
+             old_type, old_name, new_type, new_name)
 
 
 def _with_timing(fn, msg, silent=False):
@@ -1143,7 +1119,6 @@ TPU_METRIC_BLACKLIST = set([
     metrics.Metrics.APPROX_BLEU,
     metrics.Metrics.ROUGE_2_F,
     metrics.Metrics.ROUGE_L_F,
-    metrics.Metrics.IMAGE_SUMMARY,
 ])
 
 
@@ -1221,53 +1196,6 @@ def _remove_summaries():
   key = tf.GraphKeys.SUMMARIES
   del g.get_collection_ref(key)[:]
   assert not g.get_collection(key)
-
-
-def _create_host_call(model_dir):
-  """Construct a host_call writing scalar summaries.
-
-  Args:
-    model_dir: String containing path to train
-
-  Returns:
-    (fn, args) Pair to be called by TPUEstimator as the host_call.
-  """
-  graph = tf.get_default_graph()
-  summaries = graph.get_collection(tf.GraphKeys.SUMMARIES)
-
-  gs_t = tf.reshape(tf.train.get_global_step(), [1])
-  summary_kwargs = dict()
-  for t in summaries:
-    if t.op.type != "ScalarSummary":
-      continue
-
-    name = t.op.name
-    tensor = t.op.inputs[1]
-    assert tensor.shape.is_compatible_with(
-        []), ("ScalarSummary %s must have shape [], but is: %s." %
-              (name, tensor.shape))
-    summary_kwargs[name] = tf.reshape(tensor, [1])
-  summary_kwargs["global_step"] = gs_t
-
-  def host_call_fn(**kwargs):
-    """Training host call. Creates scalar summaries for training metrics.
-
-    Args:
-      **kwargs: Dict of {str: Tensor} , with `Tensor` of shape `[batch]`. Must
-        contain key "global_step" with value of current global_step Tensor.
-
-    Returns:
-      List of summary ops to run on the CPU host.
-    """
-    gs = kwargs.pop("global_step")[0]
-    with tf.contrib.summary.create_file_writer(model_dir).as_default():
-      with tf.contrib.summary.always_record_summaries():
-        for name, value in six.iteritems(kwargs):
-          tf.contrib.summary.scalar(name, tf.reduce_mean(value), step=gs)
-
-        return tf.contrib.summary.all_summary_ops()
-
-  return (host_call_fn, summary_kwargs)
 
 
 def _del_dict_nones(d):

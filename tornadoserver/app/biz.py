@@ -6,7 +6,7 @@ from processutils.segment import SegmentJieba
 from processutils.segment import SegmentNLTK
 from processutils.segment import segment_afterprocess
 from mynmt.my_t2t_decoder import decode
-from mynmt.my_t2t_decoder import SessFieldPredict
+from mynmt.my_t2t_decoder import SessPredictField
 import tornadoserver.config as config
 import re
 
@@ -17,7 +17,7 @@ tgt_lan = config.TGT_LAN
 segment_dict = {"en": SegmentNLTK, "zh": SegmentJieba}
 tokens = Token()
 trans_after_regex = "(" + "|".join(tokens.get_token_name) + ")"
-sess_field = SessFieldPredict(config)
+sess_field = SessPredictField(config)
 
 
 class Field(object):

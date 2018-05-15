@@ -71,7 +71,7 @@ flags.DEFINE_bool("eval_run_autoregressive", False,
                   "Run eval autoregressively where we condition on previous"
                   "generated output instead of the actual target.")
 flags.DEFINE_bool("eval_use_test_set", False,
-                  "Whether to use the '-medicine.sample.txt' data for EVAL (and PREDICT).")
+                  "Whether to use the '-test' data for EVAL (and PREDICT).")
 flags.DEFINE_integer("keep_checkpoint_max", 20,
                      "How many recent checkpoints to keep.")
 flags.DEFINE_bool("enable_graph_rewriter", False,
@@ -92,7 +92,7 @@ flags.DEFINE_integer("local_eval_frequency", 1000,
                      "local training.")
 flags.DEFINE_bool("locally_shard_to_cpu", False,
                   "Use CPU as a sharding device running locally. This allows "
-                  "to medicine.sample.txt sharded model construction on a machine with 1 GPU.")
+                  "to test sharded model construction on a machine with 1 GPU.")
 flags.DEFINE_bool("sync", False, "Sync compute on PS.")
 flags.DEFINE_string("worker_job", "/job:localhost", "name of worker job")
 flags.DEFINE_integer("worker_gpu", 1, "How many GPUs to use.")

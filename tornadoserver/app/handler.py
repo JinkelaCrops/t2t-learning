@@ -9,7 +9,7 @@ import json
 import tornado.web
 from tornadoserver.app.biz import sess_field
 from tornadoserver.app.biz import decode_inline
-from tornadoserver.loginst import log
+from tornadoserver.loginst import logger
 
 
 class Translate(tornado.web.RequestHandler):
@@ -17,11 +17,11 @@ class Translate(tornado.web.RequestHandler):
         data = self.get_argument("args")
         datas = json.loads(data)
         if not isinstance(datas, list) or not all(map(lambda x: isinstance(x, str), datas)):
-            log.warn("[handler] Translate.post: invalid input")
+            logger.warn("[handler] Translate.post: invalid input")
             self.write(json.dumps({"result": "invalid input"}))
         else:
-            log.info("[handler] Translate.post: get sentence and put into input queue")
-            # log.info("[handler] Translate.post: " + data)
+            logger.info("[handler] Translate.post: get sentence and put into input queue")
+            # logger.info("[handler] Translate.post: " + data)
             try:
                 result = []
                 num_of_batch = (len(datas) - 1) // sess_field.batch_size + 1
@@ -30,7 +30,7 @@ class Translate(tornado.web.RequestHandler):
                     src_lines, trans_lines = decode_inline(lines)
                     result += trans_lines
                 self.write(json.dumps({"result": result}))
-                log.info("[handler] Translate.post: send translated sentence")
+                logger.info("[handler] Translate.post: send translated sentence")
             except Exception as e:
-                log.warn("[handler] Translate.post: tornadoserver failed %s %s" % (e.__class__, e.__context__))
+                logger.warn("[handler] Translate.post: tornadoserver failed %s %s" % (e.__class__, e.__context__))
                 self.write(json.dumps({"result": "tornadoserver failed"}))

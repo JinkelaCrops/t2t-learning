@@ -65,7 +65,7 @@ def create_hparams():
         problem_name=FLAGS.problems)
 
 
-class SessFieldPredict(object):
+class SessPredictField(object):
 
     def __init__(self, config):
         os.environ["CUDA_VISIBLE_DEVICES"] = config.GPU_DEVICE
@@ -96,6 +96,7 @@ class SessFieldPredict(object):
 
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.GPU_MEM_FRAC)
         self.sess_config = tf.ConfigProto(gpu_options=gpu_options)
+        self.sess_config.gpu_options.allow_growth = config.GPU_MEM_GROWTH
 
         self.batch_size = batch_size
         tf.logging.info(f"[{file_name}] SessFieldPredict: registered")
@@ -117,7 +118,7 @@ def end_strip(sent):
     return re.sub("(?:<EOS>)*(?:<pad>)*$", "", sent)
 
 
-def decode(inputs: list, sess_field: SessFieldPredict):
+def decode(inputs: list, sess_field: SessPredictField):
     tf.logging.info(f"[{file_name}] Decode: source: " + str(inputs))
     st_time = time.time()
     inputs_numpy = [sess_field.encoders["inputs"].encode(i) + [text_encoder.EOS_ID] for i in inputs]

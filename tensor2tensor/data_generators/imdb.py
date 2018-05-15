@@ -93,7 +93,7 @@ class SentimentIMDB(text_problems.Text2ClassProblem):
 
     # Generate examples
     train = dataset_split == problem.DatasetSplit.TRAIN
-    dataset = "train" if train else "medicine.sample.txt"
+    dataset = "train" if train else "test"
     for doc, label in self.doc_generator(imdb_dir, dataset, include_label=True):
       yield {
           "inputs": doc,

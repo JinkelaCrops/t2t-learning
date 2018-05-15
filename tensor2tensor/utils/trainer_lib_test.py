@@ -56,7 +56,7 @@ class TrainerLibTest(tf.test.TestCase):
     os.mkdir(tmp_dir)
     cls.data_dir = tmp_dir
 
-    # Generate a small medicine.sample.txt dataset
+    # Generate a small test dataset
     registry.problem("tiny_algo").generate_data(cls.data_dir, None)
 
   def testExperiment(self):

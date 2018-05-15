@@ -134,7 +134,7 @@ class Desc2CodeProblem(text_problems.Text2TextProblem):
 
   def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
     train = dataset_split == problem.DatasetSplit.TRAIN
-    # Called twice: for train and medicine.sample.txt
+    # Called twice: for train and test
 
     # Get the list of the training samples (coding challenge samples)
     samples = list(generator_samples(tmp_dir, self.pb_constants))

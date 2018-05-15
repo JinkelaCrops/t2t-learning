@@ -51,12 +51,12 @@ _LIBRISPEECH_DEV_DATASETS = [
 ]
 _LIBRISPEECH_TEST_DATASETS = [
     [
-        "http://www.openslr.org/resources/12/medicine.sample.txt-clean.tar.gz",
-        "medicine.sample.txt-clean"
+        "http://www.openslr.org/resources/12/test-clean.tar.gz",
+        "test-clean"
     ],
     [
-        "http://www.openslr.org/resources/12/medicine.sample.txt-other.tar.gz",
-        "medicine.sample.txt-other"
+        "http://www.openslr.org/resources/12/test-other.tar.gz",
+        "test-other"
     ],
 ]
 

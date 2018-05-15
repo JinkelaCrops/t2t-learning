@@ -166,7 +166,7 @@ class RevBlockTest(tf.test.TestCase):
 
     self._testRevBlock(f=[f1, f2, f1, f2])
 
-  # TODO(rsepassi): Recent change to conv seems to have broken this medicine.sample.txt. Find
+  # TODO(rsepassi): Recent change to conv seems to have broken this test. Find
   # out why.
   def _testConvAndBatchNorm(self):
 

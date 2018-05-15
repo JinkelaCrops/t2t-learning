@@ -23,7 +23,6 @@ from __future__ import print_function
 from tensor2tensor.bin import t2t_trainer
 
 import tensorflow as tf
-import os
 
 def main(argv):
   t2t_trainer.main(argv)

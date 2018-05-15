@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='tensor2tensor',
-    version='1.4.2',
+    version='1.5.5',
     description='Tensor2Tensor',
     author='Google Inc.',
     author_email='no-reply@google.com',
@@ -28,15 +28,16 @@ setup(
         'tensor2tensor/bin/t2t-insights-server',
         'tensor2tensor/bin/t2t-avg-all',
         'tensor2tensor/bin/t2t-bleu',
-        'tensor2tensor/bin/t2t-tornadoserver-all',
+        'tensor2tensor/bin/t2t-translate-all',
     ],
     install_requires=[
         'bz2file',
         'flask',
         'future',
         'gevent',
+        'google-api-python-client',
         'gunicorn',
-        'gym',
+        'gym<=0.9.5',  # gym in version 0.9.6 has some temporary issues.
         'numpy',
         'requests',
         'scipy',
