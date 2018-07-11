@@ -116,12 +116,12 @@
 全部代码存放在`mytrain/train_t2t_training.sh`文件中
 
 具体参数如下：
-    * `problems`: `translate_zhen_med_small_vocab`
-    * `model`: `transformer`
-    * `hparams_set`: `transformer_big_single_gpu_batch_size_1600`
-    * `data_dir`: `test/t2t_datagen/new_med`
-    * `output_dir`: `test/t2t_train/new_med/translate_zhen_med_small_vocab/transformer-transformer_big_single_gpu_batch_size_1600`
-    * `worker_gpu`: 1, 可以改为2
+ * `problems`: `translate_zhen_med_small_vocab`
+ * `model`: `transformer`
+ * `hparams_set`: `transformer_big_single_gpu_batch_size_1600`
+ * `data_dir`: `test/t2t_datagen/new_med`
+ * `output_dir`: `test/t2t_train/new_med/translate_zhen_med_small_vocab/transformer-transformer_big_single_gpu_batch_size_1600`
+ * `worker_gpu`: 1, 可以改为2
 
 在训练过程中，可以使用`tensorboard`查看训练情况
 ```shell
